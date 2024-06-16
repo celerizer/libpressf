@@ -1276,6 +1276,11 @@ u8 pressf_init(f8_system_t *system)
 {
    u32 i = 0;
 
+  if (!system)
+    return FALSE;
+  
+  memset(system, 0, sizeof(f8_system_t));
+
    operations[0x00] = lr_a_ku;
    operations[0x01] = lr_a_kl;
    operations[0x02] = lr_a_qu;
