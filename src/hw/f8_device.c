@@ -30,7 +30,5 @@ void f8_generic_init(f8_device_t *device, unsigned size)
   {
     device->data = malloc(size);
     device->length = size;
-    device->serialize = f8_generic_serialize;
-    device->unserialize = f8_generic_unserialize;
   }
 }
