@@ -18,13 +18,21 @@ static const u16 PIXEL_COLOR_RGB565[4][4] =
   {0xFFFF, 0xFFFF, 0xFFFF, 0x0000}
 };
 
+static const u16 PIXEL_COLOR_RGB5551[4][4] =
+{
+  {0x0657, 0xF995, 0x49FD, 0x97E9},
+  {0x0657, 0xF995, 0x49FD, 0xE739},
+  {0x0657, 0xF995, 0x49FD, 0xCEBF},
+  {0xFFFF, 0xFFFF, 0xFFFF, 0x0001}
+};
+
 /* Returns the two-bit pixel data for a given pixel index */
 #define GET_PIXEL(a, b) ((a[(b) / 4] >> (3 - ((b) & 3)) * 2) & 3)
 
 /* Returns the 2-bit palette index for a scanline (defined by bit 1 of columns 125 and 126) */
 #define GET_PALETTE(a, b) ((GET_PIXEL(a, ((b) & 0xFF80) + 125) & 2) >> 1) + (GET_PIXEL(a, ((b) & 0xFF80) + 126) & 2)
 
-u8 draw_frame_rgb565_full(u8 *vram, u16 *buffer)
+static u8 draw_frame_full(u8 *vram, u16 *buffer, const u16 (*lut)[4])
 {
   if (!screen_dirty_any)
     return FALSE;
@@ -47,7 +55,7 @@ u8 draw_frame_rgb565_full(u8 *vram, u16 *buffer)
       for (x_pos = 0; x_pos < VRAM_WIDTH; x_pos++, buffer_pos++)
       {
         pixel_data = GET_PIXEL(vram, buffer_pos);
-        buffer[buffer_pos] = PIXEL_COLOR_RGB565[palette][pixel_data];
+        buffer[buffer_pos] = lut[palette][pixel_data];
       }
 
       screen_dirty[y_pos] = FALSE;
@@ -59,7 +67,7 @@ u8 draw_frame_rgb565_full(u8 *vram, u16 *buffer)
   return TRUE;
 }
 
-u8 draw_frame_rgb565(u8 *vram, u16 *buffer)
+static u8 draw_frame(u8 *vram, u16 *buffer, const u16 (*lut)[4])
 {
   if (!screen_dirty_any)
     return FALSE;
@@ -82,7 +90,7 @@ u8 draw_frame_rgb565(u8 *vram, u16 *buffer)
       for (x_pos = 4; x_pos < 4 + SCREEN_WIDTH; x_pos++, buffer_pos++)
       {
         pixel_data = GET_PIXEL(vram, y_pos * VRAM_WIDTH + x_pos);
-        buffer[buffer_pos] = PIXEL_COLOR_RGB565[palette][pixel_data];
+        buffer[buffer_pos] = lut[palette][pixel_data];
       }
 
       screen_dirty[y_pos] = FALSE;
@@ -94,51 +102,25 @@ u8 draw_frame_rgb565(u8 *vram, u16 *buffer)
   return TRUE;
 }
 
-#ifdef ULTRA64
-u8 draw_frame_ultra(u8 *vram, u8 *buffer_a, u8 *buffer_b)
+u8 draw_frame_rgb565(u8 *vram, u16 *buffer)
 {
-  if (!screen_dirty_any)
-    return FALSE;
-  else
-  {
-    u8 palette, pixel_data, x_pos, y_pos;
-    u16 buffer_pos = 0;
-
-    for (y_pos = 0; y_pos < VRAM_HEIGHT; y_pos++)
-    {
-      /* Don't waste time painting lines that haven't changed this frame */
-      if (!screen_dirty[y_pos])
-      {
-        buffer_pos += VRAM_WIDTH / 4;
-        continue;
-      }
-
-      palette = GET_PALETTE(vram, y_pos * VRAM_WIDTH) * 4;
-
-      for (x_pos = 0; x_pos < VRAM_WIDTH / 2; x_pos += 2, buffer_pos++)
-      {
-        pixel_data = GET_PIXEL(vram, y_pos * VRAM_WIDTH + x_pos);
-        buffer_a[buffer_pos] = ((palette + pixel_data) << 4) & 0xF0;
-            
-        pixel_data = GET_PIXEL(vram, y_pos * VRAM_WIDTH + x_pos + 1);
-        buffer_a[buffer_pos] += palette + pixel_data;
-
-        pixel_data = GET_PIXEL(vram, y_pos * VRAM_WIDTH + x_pos + 64);
-        buffer_b[buffer_pos] = ((palette + pixel_data) << 4) & 0xF0;
-            
-        pixel_data = GET_PIXEL(vram, y_pos * VRAM_WIDTH + x_pos + 65);
-        buffer_b[buffer_pos] += palette + pixel_data;
-      }
-
-      screen_dirty[y_pos] = FALSE;
-    }
-
-    screen_dirty_any = FALSE;
-  }
-
-  return TRUE;
+  return draw_frame(vram, buffer, PIXEL_COLOR_RGB565);
 }
-#endif
+
+u8 draw_frame_rgb565_full(u8 *vram, u16 *buffer)
+{
+  return draw_frame_full(vram, buffer, PIXEL_COLOR_RGB565);
+}
+
+u8 draw_frame_rgb5551(u8 *vram, u16 *buffer)
+{
+  return draw_frame(vram, buffer, PIXEL_COLOR_RGB5551);
+}
+
+u8 draw_frame_rgb5551_full(u8 *vram, u16 *buffer)
+{
+  return draw_frame_full(vram, buffer, PIXEL_COLOR_RGB5551);
+}
 
 /* Force the emulator to redraw every pixel next frame, 
    helpful for state loads */
