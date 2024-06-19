@@ -1342,7 +1342,6 @@ u8 pressf_init(f8_system_t *system)
 
   if (!system)
     return FALSE;
-<<<<<<< Updated upstream
   
   memset(system, 0, sizeof(f8_system_t));
 
@@ -1361,26 +1360,6 @@ u8 pressf_init(f8_system_t *system)
    operations[0x0C] = pk;
    operations[0x0D] = lr_pc0_q;
    operations[0x0E] = lr_q_dc0;
-=======
-
-  memset(system, 0, sizeof(f8_system_t));
-
-  operations[0x00] = lr_a_ku;
-  operations[0x01] = lr_a_kl;
-  operations[0x02] = lr_a_qu;
-  operations[0x03] = lr_a_ql;
-  operations[0x04] = lr_ku_a;
-  operations[0x05] = lr_kl_a;
-  operations[0x06] = lr_qu_a;
-  operations[0x07] = lr_ql_a;
-  operations[0x08] = lr_k_pc1;
-  operations[0x09] = lr_pc1_k;
-  operations[0x0A] = lr_a_isar;
-  operations[0x0B] = lr_isar_a;
-  operations[0x0C] = pk;
-  operations[0x0D] = lr_pc0_q;
-  operations[0x0E] = lr_q_dc0;
->>>>>>> Stashed changes
    operations[0x0F] = lr_dc0_q;
 
    for (i = 0x00; i < 0x08; i++)
