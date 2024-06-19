@@ -165,9 +165,10 @@ static void update_status(f8_system_t *system)
 #if !PF_ROMC
 static f8_byte next(f8_system_t *system)
 {
-  PC0++;
+  system->dbus = f8_fetch(system, PC0);
   system->cycles += CYCLE_LONG;
-  return f8_fetch(system, PC0 - 1);
+  PC0++;
+  return system->dbus;
 }
 #endif
 
@@ -256,7 +257,7 @@ F8_OP(lr_k_pc1)
   romc0b(system);
   KL = system->dbus;
 #else
-  KU.u = (u8)(PC1 & 0xFF00) >> 8;
+  KU.u = (u8)((PC1 & 0xFF00) >> 8);
   KL.u = PC1 & 0xFF;
   system->cycles += CYCLE_LONG * 2;
 #endif
@@ -953,7 +954,7 @@ F8_OP_LIS(15)
   { \
     system->cycles += CYCLE_LONG; \
     if (a & W) \
-      PC0 += next(system).u - 1; \
+      PC0 += next(system).s - 1; \
     else \
       PC0++; \
   }
