@@ -2,6 +2,8 @@
 #include "romc.h"
 #include "types.h"
 
+#if PF_ROMC
+
 /* Macros to keep code less redundant */
 
 #define INIT_DEVICES \
@@ -668,3 +670,5 @@ void romc1f(f8_system_t *system)
 
   system->cycles += CYCLE_LONG;
 }
+
+#endif

@@ -9,6 +9,14 @@
 
 #define HLE(a) void a(f8_system_t *system)
 
+#if PF_ROMC
+#define PC0 f8_main_cpu_device(system)->pc0
+#define PC1 f8_main_cpu_device(system)->pc1
+#else
+#define PC0 system->pc0
+#define PC1 system->pc1
+#endif
+
 /* 0000 */
 HLE(reset)
 {
@@ -39,9 +47,9 @@ HLE(init)
    * Jump to either the built-in game or the inserted cartridge
    */
   if (!f8_read(system, &check_byte, 0x0800, 1) || check_byte.u != 0x55)
-    f8_main_cpu_device(system)->pc0 = 0x001A - 1;
+    PC0 = 0x001A - 1;
   else
-    f8_main_cpu_device(system)->pc0 = 0x0802 - 1;
+    PC0 = 0x0802 - 1;
 }
 
 /* 001A - 001F */
@@ -49,14 +57,14 @@ HLE(no_cart_init)
 {
   /* Run the screen clear routine */
   f8_main_cpu(system)->scratchpad[0x03].u = 0xD6;
-  f8_main_cpu_device(system)->pc0 = 0x00D0 - 1;
+  PC0 = 0x00D0 - 1;
 }
 
 /* 00D0 - 00D5 */
 HLE(clear_screen)
 {
   memset(((vram_t*)system->f8devices[3].device)->data, 0, VRAM_SIZE);
-  f8_main_cpu_device(system)->pc0 = f8_main_cpu_device(system)->pc1 - 1;
+  PC0 = PC1 - 1;
 }
 
 /*
@@ -75,7 +83,7 @@ HLE(push_k)
   memcpy(&f8_main_cpu(system)->scratchpad[stack.u], &f8_main_cpu(system)->scratchpad[12], 2);
   f8_main_cpu(system)->scratchpad[59].u = stack.u + 2;
 
-  f8_main_cpu_device(system)->pc0 = f8_main_cpu_device(system)->pc1 - 1;
+  PC0 = PC1 - 1;
 }
 
 /*
@@ -155,13 +163,13 @@ void* hle_get_func_from_addr(u16 address)
 {
   switch (address)
   {
+  /*
   case 0x0000:
     return reset;
   case 0x0001:
     return init;
   case 0x001A:
     return no_cart_init;
-  /*
   case 0x00D0:
     return clear_screen;
   case 0x0107:

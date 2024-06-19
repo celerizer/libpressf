@@ -1,6 +1,7 @@
 #ifndef PRESS_F_F8_DEVICE_H
 #define PRESS_F_F8_DEVICE_H
 
+#include "../config.h"
 #include "../types.h"
 
 typedef enum
@@ -80,10 +81,12 @@ typedef struct f8_device_t
 /*
    Hardware
 */
+#if PF_ROMC
   u16 pc0;
   u16 pc1;
   u16 dc0;
   u16 dc1;
+#endif
 
 /*
   Example from a 2102 RAM chip

@@ -61,12 +61,10 @@ typedef struct f8_settings_t
 
 typedef struct f8_system_t
 {
-#if !PF_ROMC
   u16 dc0;
   u16 dc1;
   u16 pc0;
   u16 pc1;
-#endif
 
   f8_byte dbus;
 
@@ -93,6 +91,8 @@ f3850_t* f8_main_cpu(f8_system_t *system);
  * This returns the first 3850 unit in the devices array.
  */
 f8_device_t* f8_main_cpu_device(f8_system_t *system);
+
+f8_byte f8_fetch(f8_system_t *system, unsigned address);
 
 /**
  * Reads data from the F8 system into a buffer.

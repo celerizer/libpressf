@@ -130,6 +130,15 @@ u8 f8_system_init(f8_system_t *system, const system_preset_t *preset)
   return TRUE;
 }
 
+f8_byte f8_fetch(f8_system_t *system, unsigned address)
+{
+  f8_byte value;
+
+  f8_read(system, &value, address, 1);
+
+  return value;
+}
+
 unsigned f8_read(f8_system_t *system, void *dest, unsigned address,
                  unsigned size)
 {
