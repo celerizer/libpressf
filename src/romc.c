@@ -50,7 +50,7 @@ static void f8device_write(f8_device_t *device, u16 address, f8_byte data)
  *   multiple devices to write to the data bus. What's the accurate
  *   behavior here?
  **/
-void romc00(f8_system_t *system)
+static void romc00(f8_system_t *system)
 {
   INIT_DEVICES
 
@@ -74,8 +74,18 @@ void romc00(f8_system_t *system)
       device->pc0++;
   }
 #endif
+}
 
-  system->cycles += CYCLE_SHORT + CYCLE_LONG;
+void romc00s(f8_system_t *system)
+{
+  romc00(system);
+  system->cycles += CYCLE_SHORT;
+}
+
+void romc00l(f8_system_t *system)
+{
+  romc00(system);
+  system->cycles += CYCLE_LONG;
 }
 
 /**
@@ -136,9 +146,14 @@ void romc02(f8_system_t *system)
  * @todo The documentation calls it similar and LONG/SHORT is flipped, is
  * there any functional difference?
  */
-void romc03(f8_system_t *system)
+void romc03s(f8_system_t *system)
 {
-  romc00(system);
+  romc00s(system);
+}
+
+void romc03l(f8_system_t *system)
+{
+  romc00l(system);
 }
 
 /**
@@ -597,7 +612,12 @@ void romc1b(f8_system_t *system)
  * ROMC 1 1 1 0 0 / 1C / L or S
  * None.
  */
-void romc1c(f8_system_t *system)
+void romc1cs(f8_system_t *system)
+{
+  system->cycles += CYCLE_SHORT;
+}
+
+void romc1cl(f8_system_t *system)
 {
   system->cycles += CYCLE_LONG;
 }

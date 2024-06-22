@@ -65,6 +65,15 @@ opcode_t opcodes[256] =
 
 };
 
+/* 1789772.5Hz / 60 * 10000 */
+#define PF_CHANNEL_F_CLOCK_NTSC 298295417
+
+/* 2000000Hz / 60 * 10000 */
+#define PF_CHANNEL_F_CLOCK_PAL_GEN_1 333333333
+
+/* 1970491Hz / 60 * 10000 */
+#define PF_CHANNEL_F_CLOCK_PAL_GEN_2 328415167
+
 #define F8_OP(a) void a(f8_system_t *system)
 
 static void (*operations[256])(f8_system_t *system);
@@ -166,7 +175,7 @@ static void update_status(f8_system_t *system)
 static f8_byte next(f8_system_t *system)
 {
   system->dbus = f8_fetch(system, PC0);
-  system->cycles += CYCLE_LONG;
+  system->cycles += CYCLE_SHORT;
   PC0++;
   return system->dbus;
 }
@@ -319,6 +328,7 @@ F8_OP(lr_pc0_q)
   romc14(system);
 #else
   PC0 = (u16)(QU.u << 8 | QL.u);
+  system->cycles += CYCLE_LONG * 2;
 #endif
 }
 
@@ -333,6 +343,7 @@ F8_OP(lr_q_dc0)
 #else
   QU.u = DC0 & 0xFF00 >> 8;
   QL.u = DC0 & 0x00FF;
+  system->cycles += CYCLE_LONG * 2;
 #endif
 }
 
@@ -346,6 +357,7 @@ F8_OP(lr_dc0_q)
   romc19(system);
 #else
   DC0 = (u16)(QU.u << 8 | QL.u);
+  system->cycles += CYCLE_LONG * 2;
 #endif
 }
 
@@ -359,6 +371,7 @@ F8_OP(lr_dc0_h)
   romc19(system);
 #else
   DC0 = (u16)(HU.u << 8 | HL.u);
+  system->cycles += CYCLE_LONG * 2;
 #endif
 }
 
@@ -373,6 +386,7 @@ F8_OP(lr_h_dc0)
 #else
   HU.u = DC0 & 0xFF00 >> 8;
   HL.u = DC0 & 0x00FF;
+  system->cycles += CYCLE_LONG * 2;
 #endif
 }
 
@@ -434,6 +448,7 @@ F8_OP(lm)
 #else
   f8_read(system, &A, DC0, sizeof(A));
   DC0++;
+  system->cycles += CYCLE_LONG;
 #endif
 }
 
@@ -453,6 +468,7 @@ F8_OP(st)
 #else
   f8_write(system, DC0, &A, sizeof(A));
   DC0++;
+  system->cycles += CYCLE_LONG;
 #endif
 }
 
@@ -487,9 +503,9 @@ F8_OP(lnk)
 F8_OP(di)
 {
 #if PF_ROMC
-  romc1c(system);
+  romc1cs(system);
 #else
-  system->cycles += CYCLE_LONG;
+  system->cycles += CYCLE_SHORT;
 #endif
   set_status(system, STATUS_INTERRUPTS, FALSE);
 }
@@ -503,9 +519,9 @@ F8_OP(di)
 F8_OP(ei)
 {
 #if PF_ROMC
-   romc1c(system);
+   romc1cs(system);
 #else
-   system->cycles += CYCLE_LONG;
+   system->cycles += CYCLE_SHORT;
 #endif
    set_status(system, STATUS_INTERRUPTS, TRUE);
 }
@@ -530,9 +546,9 @@ F8_OP(pop)
 F8_OP(lr_w_j)
 {
 #if PF_ROMC
-  romc1c(system);
+  romc1cs(system);
 #else
-  system->cycles += CYCLE_LONG;
+  system->cycles += CYCLE_SHORT;
 #endif
   W = J.u & B00011111;
 }
@@ -551,7 +567,6 @@ F8_OP(lr_j_w)
 F8_OP(inc)
 {
   add(system, &A, 1);
-  system->cycles += CYCLE_SHORT;
 }
 
 /**
@@ -563,10 +578,11 @@ F8_OP(inc)
 F8_OP(li)
 {
 #if PF_ROMC
-  romc03(system);
+  romc03l(system);
   A = system->dbus;
 #else
   A = next(system);
+  system->cycles += CYCLE_LONG;
 #endif
 }
 
@@ -579,10 +595,11 @@ F8_OP(li)
 F8_OP(ni)
 {
 #if PF_ROMC
-  romc03(system);
+  romc03l(system);
   A.u &= system->dbus.u;
 #else
   A.u &= next(system).u;
+  system->cycles += CYCLE_SHORT;
 #endif
   add(system, &A, 0);
 }
@@ -596,10 +613,11 @@ F8_OP(ni)
 F8_OP(oi)
 {
 #if PF_ROMC
-  romc03(system);
+  romc03l(system);
   A.u |= system->dbus.u;
 #else
   A.u |= next(system).u;
+  system->cycles += CYCLE_SHORT;
 #endif
   add(system, &A, 0);
 }
@@ -614,10 +632,11 @@ F8_OP(oi)
 F8_OP(xi)
 {
 #if PF_ROMC
-  romc03(system);
+  romc03l(system);
   A.u ^= system->dbus.u;
 #else
   A.u ^= next(system).u;
+  system->cycles += CYCLE_SHORT;
 #endif
   add(system, &A, 0);
 }
@@ -632,10 +651,11 @@ F8_OP(xi)
 F8_OP(ai)
 {
 #if PF_ROMC
-  romc03(system);
+  romc03l(system);
   add(system, &A, system->dbus.u);
 #else
   add(system, &A, next(system).u);
+  system->cycles += CYCLE_SHORT;
 #endif
 }
 
@@ -651,10 +671,11 @@ F8_OP(ci)
   f8_byte immediate;
 
 #if PF_ROMC
-  romc03(system);
+  romc03l(system);
   immediate = system->dbus;
 #else
   immediate = next(system);
+  system->cycles += CYCLE_SHORT;
 #endif
   add(system, &immediate, (~A.u & 0xFF) + 1);
 }
@@ -673,11 +694,11 @@ F8_OP(in)
 
 #if PF_ROMC
   /* Apparently only 128 devices can be hooked up, don't know why */
-  romc03(system);
+  romc03l(system);
   W = 0; /* todo: why? */
   io = &system->io_ports[system->dbus.u & B01111111];
 #else
-  io = &system->io_ports[next(system).u];
+  io = &system->io_ports[next(system).u & B01111111];
 #endif
 
   if (io->func_in)
@@ -686,7 +707,7 @@ F8_OP(in)
 #if PF_ROMC
   romc1b(system);
 #else
-  system->cycles += CYCLE_LONG;
+  system->cycles += CYCLE_LONG * 2;
 #endif
 
   A = io->data;
@@ -701,6 +722,7 @@ F8_OP(in)
  * I/O ports with addresses from 4 through 255 may be accessed with the
  * OUT instruction.
  * @todo What happens when 0-3 are addressed?
+ * @todo This should be using ROMC 1A
  */
 F8_OP(out)
 {
@@ -708,7 +730,7 @@ F8_OP(out)
   io_t *io;
 
 #if PF_ROMC
-  romc03(system);
+  romc03l(system);
   address = system->dbus.u;
 #else
   address = next(system).u;
@@ -724,6 +746,12 @@ F8_OP(out)
     io->func_out(io->device_out, &io->data, A);
   else
     io->data = A;
+
+#if PF_ROMC
+  system->cycles += CYCLE_LONG;
+#else
+  system->cycles += CYCLE_LONG * 2;
+#endif
 }
 
 /**
@@ -738,7 +766,7 @@ F8_OP(out)
 F8_OP(pi)
 {
 #if PF_ROMC
-  romc03(system);
+  romc03l(system);
   A = system->dbus;
   romc0d(system);
   romc0c(system);
@@ -748,7 +776,7 @@ F8_OP(pi)
   A = next(system);
   PC1 = PC0 + 1;
   PC0 = (u16)(A.u << 8 | f8_fetch(system, PC0).u);
-  system->cycles += CYCLE_LONG * 3 + CYCLE_SHORT * 2;
+  system->cycles += CYCLE_LONG * 3 + CYCLE_SHORT;
 #endif
 }
 
@@ -767,7 +795,7 @@ F8_OP(pi)
 F8_OP(jmp)
 {
 #if PF_ROMC
-  romc03(system);
+  romc03l(system);
   A = system->dbus;
   romc0c(system);
   system->dbus = A;
@@ -775,7 +803,7 @@ F8_OP(jmp)
 #else
   A = next(system);
   PC0 = (u16)(A.u << 8 | next(system).u);
-  system->cycles += CYCLE_LONG * 3 + CYCLE_SHORT;
+  system->cycles += CYCLE_LONG * 3;
 #endif
 }
 
@@ -790,13 +818,13 @@ F8_OP(dci)
 {
 #if PF_ROMC
   romc11(system);
-  romc03(system);
+  romc03s(system);
   romc0e(system);
-  romc03(system);
+  romc03s(system);
 #else
   DC0 = (u16)(next(system).u << 8);
   DC0 |= next(system).u;
-  system->cycles += CYCLE_LONG * 4 + CYCLE_SHORT * 2;
+  system->cycles += CYCLE_LONG * 2 + CYCLE_SHORT * 2;
 #endif
 }
 
@@ -848,6 +876,9 @@ F8_OP(ds)
 
   if (address != NULL)
     add(system, address, 0xFF);
+
+  /* This operation retrieves the next with a long-cycle ROMC00. */
+  system->cycles += CYCLE_LONG - CYCLE_SHORT;
 }
 
 /**
@@ -942,21 +973,26 @@ F8_OP_LIS(15)
 #define F8_OP_BT(a) \
   F8_OP(bt##a) \
   { \
-    romc1c(system); \
+    romc1cs(system); \
     if (a & W) \
       romc01(system); \
     else \
-      romc03(system); \
+      romc03s(system); \
   }
 #else
 #define F8_OP_BT(a) \
   F8_OP(bt##a) \
   { \
-    system->cycles += CYCLE_LONG; \
     if (a & W) \
+    { \
       PC0 += next(system).s - 1; \
+      system->cycles += CYCLE_LONG + CYCLE_SHORT; \
+    } \
     else \
+    { \
       PC0++; \
+      system->cycles += CYCLE_SHORT * 2; \
+    } \
   }
 #endif
 
@@ -1026,6 +1062,7 @@ F8_OP(am)
 #else
   add(system, &A, f8_fetch(system, DC0).u);
   DC0++;
+  system->cycles += CYCLE_LONG;
 #endif
 }
 
@@ -1044,6 +1081,7 @@ F8_OP(amd)
   add_bcd(system, &A, system->dbus.u);
 #else
   add_bcd(system, &A, f8_fetch(system, DC0).u);
+  system->cycles += CYCLE_LONG;
 #endif
 }
 
@@ -1061,6 +1099,7 @@ F8_OP(nm)
   A.u &= system->dbus.u;
 #else
   A.u &= f8_fetch(system, DC0).u;
+  system->cycles += CYCLE_LONG;
 #endif
   update_status(system);
 }
@@ -1078,6 +1117,7 @@ F8_OP(om)
   A.u |= system->dbus.u;
 #else
   A.u |= f8_fetch(system, DC0).u;
+  system->cycles += CYCLE_LONG;
 #endif
   update_status(system);
 }
@@ -1094,6 +1134,7 @@ F8_OP(xm)
   A.u ^= system->dbus.u;
 #else
   A.u ^= f8_fetch(system, DC0).u;
+  system->cycles += CYCLE_LONG;
 #endif
   update_status(system);
 }
@@ -1116,6 +1157,7 @@ F8_OP(cm)
   temp = system->dbus;
 #else
   temp = f8_fetch(system, DC0);
+  system->cycles += CYCLE_LONG;
 #endif
   add(system, &temp, (~A.u & 0xFF) + 1);
 }
@@ -1135,6 +1177,7 @@ F8_OP(adc)
   romc0a(system);
 #else
   DC0 += A.s;
+  system->cycles += CYCLE_LONG;
 #endif
 }
 
@@ -1149,12 +1192,18 @@ F8_OP(br7)
   if ((ISAR & B00000111) != B00000111)
     romc01(system);
   else
-    romc03(system);
+    romc03s(system);
 #else
   if ((ISAR & B00000111) != B00000111)
+  {
     PC0 += next(system).s - 1;
+    system->cycles += CYCLE_LONG + CYCLE_SHORT;
+  }
   else
+  {
     PC0++;
+    system->cycles += CYCLE_SHORT * 2;
+  }
 #endif
 }
 
@@ -1166,17 +1215,22 @@ F8_OP(bf)
 {
 #if PF_ROMC
   /* Wait? */
-  romc1c(system);
+  romc1cs(system);
   if (!((system->dbus.u & B00001111) & W))
     romc01(system);
   else
-    romc03(system);
+    romc03s(system);
 #else
-  system->cycles += CYCLE_LONG;
   if (!((system->dbus.u & B00001111) & W))
+  {
     PC0 += next(system).s - 1;
+    system->cycles += CYCLE_LONG + CYCLE_SHORT;
+  }
   else
+  {
     PC0++;
+    system->cycles += CYCLE_SHORT * 2;
+  }
 #endif
 }
 
@@ -1192,12 +1246,23 @@ F8_OP(bf)
  */
 F8_OP(ins)
 {
-  io_t *io = &system->io_ports[system->dbus.u & B00001111];
+  unsigned address = system->dbus.u & B00001111;
+  io_t *io = &system->io_ports[address];
 
+  if (address < 2)
 #if PF_ROMC
-  romc1c(system);
+    romc1cs(system);
 #else
-  system->cycles += CYCLE_LONG;
+    system->cycles += CYCLE_SHORT;
+#endif
+  else
+#if PF_ROMC
+  {
+    romc1cl(system);
+    romc1b(system);
+  }
+#else
+  system->cycles += CYCLE_LONG * 2;
 #endif
 
   if (io->func_in)
@@ -1218,18 +1283,31 @@ F8_OP(ins)
  */
 F8_OP(outs)
 {
-  io_t *io = &system->io_ports[system->dbus.u & B00001111];
+  unsigned address = system->dbus.u & B00001111;
+  io_t *io = &system->io_ports[address];
 
+  if (address < 2)
 #if PF_ROMC
-  romc1c(system);
+    romc1cs(system);
 #else
-  system->cycles += CYCLE_LONG;
+    system->cycles += CYCLE_SHORT;
+#endif
+  else
+#if PF_ROMC
+  {
+    romc1cl(system);
+    romc1a(system);
+  }
+#else
+  system->cycles += CYCLE_LONG * 2;
 #endif
 
   if (io->func_out)
   {
     if (io->device_out->set_timing)
-      io->device_out->set_timing(io->device_out, system->cycles, system->total_cycles);
+      io->device_out->set_timing(io->device_out,
+                                 system->cycles,
+                                 system->total_cycles);
     io->func_out(io->device_out, &io->data, A);
   }
   else
@@ -1263,9 +1341,9 @@ F8_OP(asd)
   f8_byte *reg = isar(system);
 
 #if PF_ROMC
-  romc1c(system);
+  romc1cs(system);
 #else
-  system->cycles += CYCLE_LONG;
+  system->cycles += CYCLE_SHORT;
 #endif
 
   if (reg != NULL)
@@ -1458,7 +1536,7 @@ u8 pressf_init(f8_system_t *system)
    operations[0xEF] = invalid;
    operations[0xFF] = invalid;
 
-   system->total_cycles = 60000;
+   system->total_cycles = PF_CHANNEL_F_CLOCK_NTSC;
 
    f3850_init(&system->f8devices[0]);
 
@@ -1480,7 +1558,7 @@ void pressf_step(f8_system_t *system)
 #endif
 
 #if PF_ROMC
-  romc00(system);
+  romc00s(system);
 #else
   system->dbus = next(system);
 #endif

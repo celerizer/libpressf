@@ -3,14 +3,16 @@
 
 #include "hw/system.h"
 
-#define CYCLE_SHORT 4
-#define CYCLE_LONG  6
+#define CYCLE_SHORT 40000
+#define CYCLE_LONG  60000
 
 #if PF_ROMC
-void romc00(f8_system_t* system);
+void romc00s(f8_system_t* system);
+void romc00l(f8_system_t* system);
 void romc01(f8_system_t* system);
 void romc02(f8_system_t* system);
-void romc03(f8_system_t* system);
+void romc03s(f8_system_t* system);
+void romc03l(f8_system_t* system);
 void romc04(f8_system_t* system);
 void romc05(f8_system_t* system);
 void romc06(f8_system_t* system);
@@ -35,7 +37,8 @@ void romc18(f8_system_t* system);
 void romc19(f8_system_t* system);
 void romc1a(f8_system_t* system);
 void romc1b(f8_system_t* system);
-void romc1c(f8_system_t* system);
+void romc1cs(f8_system_t* system);
+void romc1cl(f8_system_t* system);
 void romc1d(f8_system_t* system);
 void romc1e(f8_system_t* system);
 void romc1f(f8_system_t* system);
