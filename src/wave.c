@@ -1,9 +1,9 @@
 #include "types.h"
 #include "wave.h"
 
-double pf_factorial(u8 x)
+float pf_factorial(u8 x)
 {
-  double result = x;
+  float result = x;
 
   for (x--; x > 1; x--)
     result *= x;
@@ -11,9 +11,9 @@ double pf_factorial(u8 x)
   return result;
 }
 
-double pf_power(double x, u8 power)
+float pf_power(float x, u8 power)
 {
-  double result = x;
+  float result = x;
 
   for (; power > 1; power--)
     result *= x;
@@ -21,9 +21,9 @@ double pf_power(double x, u8 power)
   return result;
 }
 
-double pf_wave(double x, u8 cosine)
+float pf_wave(float x, u8 cosine)
 {
-  double next, result;
+  float next, result;
   u8 positive = TRUE;
   u8 i;
 

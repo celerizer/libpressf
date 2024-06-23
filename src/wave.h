@@ -8,6 +8,6 @@
 /* Largest Taylor series factorial a float can hold */
 #define PF_TERMS 32
 
-double pf_wave(double x, u8 cosine);
+float pf_wave(float x, u8 cosine);
 
 #endif
