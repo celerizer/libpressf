@@ -6,7 +6,6 @@
 #define CYCLE_SHORT 40000
 #define CYCLE_LONG  60000
 
-#if PF_ROMC
 void romc00s(f8_system_t* system);
 void romc00l(f8_system_t* system);
 void romc01(f8_system_t* system);
@@ -42,6 +41,5 @@ void romc1cl(f8_system_t* system);
 void romc1d(f8_system_t* system);
 void romc1e(f8_system_t* system);
 void romc1f(f8_system_t* system);
-#endif
 
 #endif

@@ -73,6 +73,10 @@ typedef struct f8_system_t
   f8_word pc0;
   f8_word pc1;
 
+#if !PF_ROMC
+  f8_byte memory[0x10000];
+#endif
+
   f8_byte dbus;
 
   int cycles;

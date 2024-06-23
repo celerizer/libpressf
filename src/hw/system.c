@@ -135,6 +135,15 @@ u8 f8_system_init(f8_system_t *system, const system_preset_t *preset)
       /* Setup ROMC-enabled devices */
       device->start = hookup->start;
       device->end = hookup->start + device->length - 1;
+
+      /**
+       * If using simple ROMC mode, map to contiguous memory.
+       * @todo Constructor is still called, leading to double allocate.
+       */
+#if !PF_ROMC
+      if (!(device->flags & F8_NO_ROMC))
+        device->data = &system->memory[hookup->start];
+#endif
     }
   }
   system->f8device_count = j;
