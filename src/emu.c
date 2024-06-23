@@ -1549,7 +1549,7 @@ u8 pressf_init(f8_system_t *system)
 void pressf_step(f8_system_t *system)
 {
 #if PF_HAVE_HLE_BIOS
-  void (*hle_func)() = hle_get_func_from_addr(PC0);
+  void (*hle_func)() = hle_get_func_from_addr(PC0.u);
 #endif
 
 #if PF_DEBUGGER

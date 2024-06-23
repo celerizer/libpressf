@@ -3,7 +3,7 @@
 
 #include "f8_device.h"
 
-#define SCRATCH_SIZE 64
+#define F3850_SCRATCH_SIZE 64
 
 #define STATUS_SIGN       (1 << 0)
 #define STATUS_CARRY      (1 << 1)
@@ -20,7 +20,7 @@ typedef struct f3850_t
   u8 isar;
 
   /* 8 bit */
-  f8_byte scratchpad[SCRATCH_SIZE];
+  f8_byte scratchpad[F3850_SCRATCH_SIZE];
 
   /* 5 bit */
   u8 status_register;

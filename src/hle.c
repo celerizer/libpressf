@@ -81,7 +81,7 @@ HLE(push_k)
 
   stack.u = f8_main_cpu(system)->scratchpad[59].u & B00111111;
 
-  f8_main_cpu(system)->scratchpad[7].u = f8_main_cpu(system)->isar.raw.data;
+  f8_main_cpu(system)->scratchpad[7].u = f8_main_cpu(system)->isar;
   memcpy(&f8_main_cpu(system)->scratchpad[stack.u], &f8_main_cpu(system)->scratchpad[12], 2);
   f8_main_cpu(system)->scratchpad[59].u = stack.u + 2;
 
