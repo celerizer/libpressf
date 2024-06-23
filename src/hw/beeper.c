@@ -17,8 +17,10 @@ static const i16 SOUND_FREQUENCIES[4] =
 
 static void sound_push_back(f8_beeper_t *beeper, unsigned frequency)
 {
-  unsigned current_tick = PF_SOUND_SAMPLES * ((float)beeper->current_cycles /
-                                        (float)beeper->total_cycles);
+  unsigned current_tick = (unsigned)(
+    PF_SOUND_SAMPLES *
+    (float)beeper->current_cycles /
+    (float)beeper->total_cycles);
 
   if (current_tick != beeper->last_tick)
   {
@@ -69,12 +71,16 @@ void beeper_finish_frame(f8_device_t *device)
     else
     {
       /* Use sine wave to tell if our square wave is on or off */
-      float sine = pf_wave((2 * PF_PI * m_beeper->frequencies[i] *
-                             m_beeper->time * PF_SOUND_PERIOD), FALSE);
-      int mult = sine > 0 ? 1 : 0;
+      float sine = pf_wave((2 *
+                            PF_PI *
+                            m_beeper->frequencies[i] *
+                            (float)(m_beeper->time) *
+                            PF_SOUND_PERIOD), FALSE);
+      float mult = sine > 0 ? 1 : 0;
+      short final_sample = (short)(m_beeper->amplitude * mult);
 
-      m_beeper->samples[2 * i] = m_beeper->amplitude * mult;
-      m_beeper->samples[2 * i + 1] = m_beeper->amplitude * mult;
+      m_beeper->samples[2 * i] = final_sample;
+      m_beeper->samples[2 * i + 1] = final_sample;
       m_beeper->amplitude *= PF_SOUND_DECAY;
     }
   }

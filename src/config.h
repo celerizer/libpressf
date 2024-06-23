@@ -57,11 +57,11 @@ PF_STATIC_ASSERT(!(PF_SOUND_FREQUENCY % 60),
                  "Audio frequency not evenly divisible by 60");
 
 #ifndef PF_SOUND_DECAY
-#define PF_SOUND_DECAY (1.0 - 77.0 / PF_SOUND_FREQUENCY)
+#define PF_SOUND_DECAY (1.0f - 77.0f / PF_SOUND_FREQUENCY)
 #endif
 
 #ifndef PF_SOUND_PERIOD
-#define PF_SOUND_PERIOD 1.0 / PF_SOUND_FREQUENCY
+#define PF_SOUND_PERIOD 1.0f / PF_SOUND_FREQUENCY
 #endif
 
 #ifndef PF_SOUND_SAMPLES

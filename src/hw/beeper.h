@@ -8,12 +8,12 @@ typedef struct
 {
   int current_cycles;
   int total_cycles;
-  int frequency_last;
+  short frequency_last;
   unsigned last_tick;
   float amplitude;
   unsigned time;
   short frequencies[PF_SOUND_SAMPLES];
-  i16 samples[PF_SOUND_SAMPLES * 2];
+  short samples[PF_SOUND_SAMPLES * 2];
 } f8_beeper_t;
 
 F8D_OP_OUT(beeper_out);

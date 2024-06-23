@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#define PF_PI 3.141592653589793115997963468544185161590576171875
+#define PF_PI 3.141592653589793115997963468544185161590576171875f
 
 /* Largest Taylor series factorial a float can hold */
 #define PF_TERMS 32
