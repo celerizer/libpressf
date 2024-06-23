@@ -7,6 +7,8 @@
 static const char *name = "Beeper";
 static const int type = F8_DEVICE_BEEPER;
 
+static float sound_wavetable[3][PF_SOUND_SAMPLES];
+
 static const i16 SOUND_FREQUENCIES[4] =
 {
   0,
@@ -30,7 +32,7 @@ static void sound_push_back(f8_beeper_t *beeper, unsigned frequency)
       beeper->frequencies[i] = beeper->frequency_last;
   }
   beeper->last_tick = current_tick;
-  beeper->frequency_last = SOUND_FREQUENCIES[frequency];
+  beeper->frequency_last = (u8)frequency;
 }
 
 F8D_OP_OUT(beeper_out)
@@ -71,11 +73,7 @@ void beeper_finish_frame(f8_device_t *device)
     else
     {
       /* Use sine wave to tell if our square wave is on or off */
-      float sine = pf_wave((2 *
-                            PF_PI *
-                            m_beeper->frequencies[i] *
-                            (float)(m_beeper->time) *
-                            PF_SOUND_PERIOD), FALSE);
+      float sine = sound_wavetable[m_beeper->frequencies[i] - 1][m_beeper->time];
       float mult = sine > 0 ? 1 : 0;
       short final_sample = (short)(m_beeper->amplitude * mult);
 
@@ -90,6 +88,14 @@ void beeper_finish_frame(f8_device_t *device)
 
 void beeper_init(f8_device_t *device)
 {
+  int i;
+
+  for (i = 0; i < PF_SOUND_SAMPLES; i++)
+  {
+    sound_wavetable[0][i] = pf_wave((2 * PF_PI * 1000 * i * PF_SOUND_PERIOD), FALSE);
+    sound_wavetable[1][i] = pf_wave((2 * PF_PI * 500 * i * PF_SOUND_PERIOD), FALSE);
+    sound_wavetable[2][i] = pf_wave((2 * PF_PI * 120 * i * PF_SOUND_PERIOD), FALSE);
+  }
   if (device)
   {
     device->device = (f8_beeper_t*)calloc(1, sizeof(f8_beeper_t));
