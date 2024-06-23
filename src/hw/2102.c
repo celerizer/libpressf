@@ -26,81 +26,65 @@ static int type = F8_DEVICE_2102;
 /* port a (p20) OUT  -   -   -  IN  A2  A3  RW */
 /* port b (p21) A9  A8  A7  A1  A6  A5  A4  A0 */
 
-typedef union
-{
-  struct
-  {
-    u8 rw : 1;
-    u8 a3 : 1;
-    u8 a2 : 1;
-    u8 in : 1;
-    u8 unused : 3;
-    u8 out : 1;
-  } bits;
-  u8 raw;
-} f2102_out_write_t;
-
-typedef union
-{
-  struct
-  {
-    u8 a0 : 1;
-    u8 a4 : 1;
-    u8 a5 : 1;
-    u8 a6 : 1;
-    u8 a1 : 1;
-    u8 a7 : 1;
-    u8 a8 : 1;
-    u8 a9 : 1;
-  } bits;
-  u8 raw;
-} f2102_out_address_t;
+#define BIT_RW  B00000001
+#define BIT_IN  B00001000
+#define BIT_OUT B10000000
 
 F8D_OP_OUT(f2102_out_address)
 {
   f2102_t *m_f2102 = (f2102_t*)device->device;
-  f2102_out_address_t address;
+  u16 address = 0;
 
-  address.raw = value.u;
+  /* P0 -> A0 */
+  address |= (value.u & B00000001);
+  /* P4 -> A1 */
+  address |= (value.u & B00010000) >> 3;
+  /* P1 -> A4 */
+  address |= (value.u & B00000010) << 3;
+  /* P2 -> A5 */
+  address |= (value.u & B00000100) << 3;
+  /* P3 -> A6 */
+  address |= (value.u & B00001000) << 3;
+  /* P5 -> A7 */
+  address |= (value.u & B00100000) << 2;
+  /* P6 -> A8 */
+  address |= (value.u & B01000000) << 2;
+  /* P7 -> A9 */
+  address |= (value.u & B10000000) << 2;
 
-  /* Setup most of the addressing bits */
-  m_f2102->address.bits.a0 = address.bits.a0;
-  m_f2102->address.bits.a1 = address.bits.a1;
-  m_f2102->address.bits.a4 = address.bits.a4;
-  m_f2102->address.bits.a5 = address.bits.a5;
-  m_f2102->address.bits.a6 = address.bits.a6;
-  m_f2102->address.bits.a7 = address.bits.a7;
-  m_f2102->address.bits.a8 = address.bits.a8;
-  m_f2102->address.bits.a9 = address.bits.a9;
+  m_f2102->address = (m_f2102->address & B00001100) | address;
 
   *io_data = value;
 }
 
+/**
+ * Used for the last 2 addressing bits and to send/receive data.
+ * Hooked to port 25 on Videocart 10
+ * Hooked to port 21 on Videocart 18
+ */
 F8D_OP_OUT(f2102_out_write)
 {
   f2102_t *m_f2102 = (f2102_t*)device->device;
-  f2102_out_write_t write;
+  u16 address = 0;
   f8_byte *data;
   int bit;
 
-  write.raw = value.u;
+  /* P2 -> A2 */
+  address |= (value.u & B00000100);
+  /* P1 -> A3 */
+  address |= (value.u & B00000010) << 2;
 
-  /* Setup final two addressing bits */
-  m_f2102->address.bits.a0 = write.bits.a2;
-  m_f2102->address.bits.a1 = write.bits.a3;
+  m_f2102->address = (m_f2102->address & B11110011) | address;
 
-  data = &device->data[m_f2102->address.raw.u / 8];
-  bit = (1 << (m_f2102->address.raw.u % 8));
+  data = &device->data[address / 8];
+  bit = (1 << (address % 8));
 
   /* Are we writing data? */
-  if (write.bits.rw)
-    data->u = (write.bits.in) ? (data->u & bit) : (data->u & ~bit);
-  /* No, we're reading it. Turn output bit on/off for next IN instruction. */
+  if (value.u & BIT_RW)
+    data->u = (value.u & BIT_IN) ? (data->u & bit) : (data->u & ~bit);
+  /* No, we're reading it. */
   else
-  {
-    write.bits.out = data->u & bit;
-    io_data->u = write.raw;
-  }
+    io_data->u = (data->u & bit) ? (value.u & BIT_OUT) : (value.u & ~BIT_OUT);
 }
 
 void f2102_init(f8_device_t *device)

@@ -78,21 +78,31 @@ opcode_t opcodes[256] =
 
 static void (*operations[256])(f8_system_t *system);
 
+unsigned get_status(f8_system_t *system, const unsigned flag)
+{
+  return (W & flag) != 0;
+}
+
+void set_status(f8_system_t *system, const unsigned flag, unsigned enable)
+{
+  W = (unsigned char)(enable ? W | flag : W & ~flag);
+}
+
 void add(f8_system_t *system, f8_byte *dest, unsigned src)
 {
   unsigned result = dest->u + src;
 
   /* Sign bit is set if the result is positive or zero */
-  W.flags.sign = (result & B10000000) ? 0 : 1;
+  set_status(system, STATUS_SIGN, !(result & B10000000));
 
   /* We carried if we went above max 8-bit */
-  W.flags.carry = (result & 0x100) ? 1 : 0;
+  set_status(system, STATUS_CARRY, result & 0x100);
 
   /* We zeroed if the result was zero */
-  W.flags.zero = (result & 0xFF) == 0;
+  set_status(system, STATUS_ZERO, (result & 0xFF) == 0);
 
   /* We overflowed up or down if result goes beyond 8 bit (changed sign) */
-  W.flags.overflow = ((dest->u ^ result) & (src ^ result) & 0x80) ? 1 : 0;
+  set_status(system, STATUS_OVERFLOW, ((dest->u ^ result) & (src ^ result) & 0x80));
 
   dest->u = (unsigned char)result;
 }
@@ -146,12 +156,12 @@ static f8_byte *isar(f8_system_t *system)
     address = &f8_main_cpu(system)->scratchpad[opcode];
   }
   else if (opcode != 0x0F)
-    address = &f8_main_cpu(system)->scratchpad[ISAR.raw.data];
+    address = &f8_main_cpu(system)->scratchpad[ISAR & 0x3F];
 
   if (opcode == 0x0D)
-    ISAR.halves.l++;
+    ISAR = (ISAR & B00111000) | ((ISAR + 1) & B00000111);
   else if (opcode == 0x0E)
-    ISAR.halves.l--;
+    ISAR = (ISAR & B00111000) | ((ISAR - 1) & B00000111);
 
   return address;
 }
@@ -283,13 +293,13 @@ F8_OP(lr_pc1_k)
 /* 0A */
 F8_OP(lr_a_isar)
 {
-  A.u = ISAR.raw.data;
+  A.u = ISAR & B00111111;
 }
 
 /* 0B */
 F8_OP(lr_isar_a)
 {
-  ISAR.raw.data = A.u;
+  ISAR = A.u & B00111111;
 }
 
 /* 0C */
@@ -383,10 +393,10 @@ F8_OP(lr_h_dc0)
 static void shift(f8_system_t *system, unsigned right, unsigned amount)
 {
   A.u = (u8)(right ? A.u >> amount : A.u << amount);
-  W.flags.overflow = 0;
-  W.flags.zero = A.u == 0;
-  W.flags.carry = 0;
-  W.flags.sign = A.s >= 0;
+  set_status(system, STATUS_OVERFLOW, FALSE);
+  set_status(system, STATUS_ZERO,     A.u == 0);
+  set_status(system, STATUS_CARRY,    FALSE);
+  set_status(system, STATUS_SIGN,     A.s >= 0);
 }
 
 /**
@@ -481,7 +491,7 @@ F8_OP(com)
  */
 F8_OP(lnk)
 {
-  add(system, &A, W.flags.carry);
+  add(system, &A, get_status(system, STATUS_CARRY));
 }
 
 /**
@@ -497,7 +507,7 @@ F8_OP(di)
 #else
   system->cycles += CYCLE_SHORT;
 #endif
-  W.flags.interrupts = 0;
+  set_status(system, STATUS_INTERRUPTS, FALSE);
 }
 
 /**
@@ -513,7 +523,7 @@ F8_OP(ei)
 #else
    system->cycles += CYCLE_SHORT;
 #endif
-   W.flags.interrupts = 1;
+   set_status(system, STATUS_INTERRUPTS, TRUE);
 }
 
 /**
@@ -540,13 +550,13 @@ F8_OP(lr_w_j)
 #else
   system->cycles += CYCLE_SHORT;
 #endif
-  W.raw.data = J.u;
+  W = J.u & B00011111;
 }
 
 /* 1E */
 F8_OP(lr_j_w)
 {
-  J.u = W.raw.data;
+  J.u = W & B00011111;
 }
 
 /**
@@ -685,7 +695,7 @@ F8_OP(in)
 #if PF_ROMC
   /* Apparently only 128 devices can be hooked up, don't know why */
   romc03l(system);
-  W.raw.data = 0; /* todo: why? */
+  W = 0; /* todo: why? */
   io = &system->io_ports[system->dbus.u & B01111111];
 #else
   io = &system->io_ports[next(system).u & B01111111];
@@ -904,7 +914,11 @@ F8_OP(lr_r_a)
  */
 F8_OP(lisu)
 {
-  ISAR.halves.h = system->dbus.u & B00000111;
+  unsigned immediate = system->dbus.u & B00000111;
+
+  /* Mask to lower 3 bits, load new upper */
+  ISAR &= B00000111;
+  ISAR |= immediate << 3;
 }
 
 /**
@@ -916,7 +930,11 @@ F8_OP(lisu)
  */
 F8_OP(lisl)
 {
-  ISAR.halves.l = system->dbus.u & B00000111;
+  unsigned immediate = system->dbus.u & B00000111;
+
+  /* Mask to upper 3 bits, load new lower */
+  ISAR &= B00111000;
+  ISAR |= immediate;
 }
 
 /**
@@ -956,7 +974,7 @@ F8_OP_LIS(15)
   F8_OP(bt##a) \
   { \
     romc1cs(system); \
-    if (a & W.raw.data) \
+    if (a & W) \
       romc01(system); \
     else \
       romc03s(system); \
@@ -965,7 +983,7 @@ F8_OP_LIS(15)
 #define F8_OP_BT(a) \
   F8_OP(bt##a) \
   { \
-    if (a & W.raw.data) \
+    if (a & W) \
     { \
       PC0 += next(system).s - 1; \
       system->cycles += CYCLE_LONG + CYCLE_SHORT; \
@@ -1171,12 +1189,12 @@ F8_OP(adc)
 F8_OP(br7)
 {
 #if PF_ROMC
-  if (ISAR.halves.l != B00000111)
+  if ((ISAR & B00000111) != B00000111)
     romc01(system);
   else
     romc03s(system);
 #else
-  if (ISAR.halves.l != B00000111)
+  if ((ISAR & B00000111) != B00000111)
   {
     PC0 += next(system).s - 1;
     system->cycles += CYCLE_LONG + CYCLE_SHORT;
@@ -1198,12 +1216,12 @@ F8_OP(bf)
 #if PF_ROMC
   /* Wait? */
   romc1cs(system);
-  if (!((system->dbus.u & B00011111) & W.raw.data))
+  if (!((system->dbus.u & B00001111) & W))
     romc01(system);
   else
     romc03s(system);
 #else
-  if (!((system->dbus.u & B00011111) & W.raw.data))
+  if (!((system->dbus.u & B00001111) & W))
   {
     PC0 += next(system).s - 1;
     system->cycles += CYCLE_LONG + CYCLE_SHORT;
@@ -1531,7 +1549,7 @@ u8 pressf_init(f8_system_t *system)
 void pressf_step(f8_system_t *system)
 {
 #if PF_HAVE_HLE_BIOS
-  void (*hle_func)() = hle_get_func_from_addr(PC0.u);
+  void (*hle_func)() = hle_get_func_from_addr(PC0);
 #endif
 
 #if PF_DEBUGGER
