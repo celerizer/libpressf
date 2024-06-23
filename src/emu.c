@@ -691,6 +691,7 @@ F8_OP(ci)
 F8_OP(in)
 {
   io_t *io;
+  u8 i;
 
 #if PF_ROMC
   /* Apparently only 128 devices can be hooked up, don't know why */
@@ -701,8 +702,9 @@ F8_OP(in)
   io = &system->io_ports[next(system).u & B01111111];
 #endif
 
-  if (io->func_in)
-    io->func_in(io->device_in, &io->data);
+  for (i = 0; i < F8_MAX_IO_LINK; i++)
+    if (io->func_in[i])
+      io->func_in[i](io->device_in[i], &io->data);
 
 #if PF_ROMC
   romc1b(system);
@@ -726,8 +728,9 @@ F8_OP(in)
  */
 F8_OP(out)
 {
-  u8 address;
   io_t *io;
+  u8 address, i;
+  u8 found = FALSE;
 
 #if PF_ROMC
   romc03l(system);
@@ -742,9 +745,16 @@ F8_OP(out)
 #endif
 
   io = &system->io_ports[address];
-  if (io->func_out)
-    io->func_out(io->device_out, &io->data, A);
-  else
+
+  for (i = 0; i < F8_MAX_IO_LINK; i++)
+  {
+    if (io->func_out[i])
+    {
+      io->func_out[i](io->device_out[i], &io->data, A);
+      found = TRUE;
+    }
+  }
+  if (!found)
     io->data = A;
 
 #if PF_ROMC
@@ -1248,6 +1258,7 @@ F8_OP(ins)
 {
   unsigned address = system->dbus.u & B00001111;
   io_t *io = &system->io_ports[address];
+  u8 i;
 
   if (address < 2)
 #if PF_ROMC
@@ -1265,8 +1276,9 @@ F8_OP(ins)
   system->cycles += CYCLE_LONG * 2;
 #endif
 
-  if (io->func_in)
-    io->func_in(io->device_in, &io->data);
+  for (i = 0; i < F8_MAX_IO_LINK; i++)
+    if (io->func_in[i])
+      io->func_in[i](io->device_in[i], &io->data);
   A = io->data;
 
   add(system, &A, 0);
@@ -1285,6 +1297,8 @@ F8_OP(outs)
 {
   unsigned address = system->dbus.u & B00001111;
   io_t *io = &system->io_ports[address];
+  u8 found = FALSE;
+  u8 i;
 
   if (address < 2)
 #if PF_ROMC
@@ -1302,15 +1316,18 @@ F8_OP(outs)
   system->cycles += CYCLE_LONG * 2;
 #endif
 
-  if (io->func_out)
+  for (i = 0; i < F8_MAX_IO_LINK; i++)
   {
-    if (io->device_out->set_timing)
-      io->device_out->set_timing(io->device_out,
-                                 system->cycles,
-                                 system->total_cycles);
-    io->func_out(io->device_out, &io->data, A);
+    if (io->func_out[i])
+    {
+      if (io->device_out[i]->set_timing)
+        io->device_out[i]->set_timing(io->device_out[i],
+                                      system->cycles,
+                                      system->total_cycles);
+      io->func_out[i](io->device_out[i], &io->data, A);
+    }
   }
-  else
+  if (!found)
     io->data = A;
 }
 

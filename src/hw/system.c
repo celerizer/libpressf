@@ -105,13 +105,31 @@ u8 f8_system_init(f8_system_t *system, const system_preset_t *preset)
       /* Setup the IO transfer */
       if (hookup->func_in)
       {
-        system->io_ports[hookup->port].device_in = device;
-        system->io_ports[hookup->port].func_in = hookup->func_in;
+        unsigned k;
+
+        for (k = 0; k < F8_MAX_IO_LINK; k++)
+        {
+          if (!system->io_ports[hookup->port].func_in[k])
+          {
+            system->io_ports[hookup->port].device_in[k] = device;
+            system->io_ports[hookup->port].func_in[k] = hookup->func_in;
+            break;
+          }
+        }
       }
       if (hookup->func_out)
       {
-        system->io_ports[hookup->port].device_out = device;
-        system->io_ports[hookup->port].func_out = hookup->func_out;
+        unsigned k;
+
+        for (k = 0; k < F8_MAX_IO_LINK; k++)
+        {
+          if (!system->io_ports[hookup->port].func_out[k])
+          {
+            system->io_ports[hookup->port].device_out[k] = device;
+            system->io_ports[hookup->port].func_out[k] = hookup->func_out;
+            break;
+          }
+        }
       }
 
       /* Setup ROMC-enabled devices */
@@ -120,12 +138,6 @@ u8 f8_system_init(f8_system_t *system, const system_preset_t *preset)
     }
   }
   system->f8device_count = j;
-
-  /* hack */
-  ((vram_t*)system->f8devices[3].device)->io_write = &system->io_ports[0].data;
-  ((vram_t*)system->f8devices[3].device)->io_color = &system->io_ports[1].data;
-  ((vram_t*)system->f8devices[3].device)->io_x = &system->io_ports[4].data;
-  ((vram_t*)system->f8devices[3].device)->io_y = &system->io_ports[5].data;
 
   return TRUE;
 }
@@ -241,10 +253,18 @@ unsigned f8_system_set_device_out_cb(f8_system_t *system,
 
     if (!io)
       break;
-    if (io->device_out && io->device_out->type == type)
+    else
     {
-      io->func_out = func;
-      set++;
+      unsigned j;
+
+      for (j = 0; j < F8_MAX_IO_LINK; j++)
+      {
+        if (io->device_out[j] && io->device_out[j]->type == type)
+        {
+          io->func_out[j] = func;
+          set++;
+        }
+      }
     }
   }
 
@@ -263,10 +283,18 @@ unsigned f8_system_set_device_in_cb(f8_system_t *system,
 
     if (!io)
       break;
-    if (io->device_in && io->device_in->type == type)
+    else
     {
-      io->func_in = func;
-      set++;
+      unsigned j;
+
+      for (j = 0; j < F8_MAX_IO_LINK; j++)
+      {
+        if (io->device_in[j] && io->device_in[j]->type == type)
+        {
+          io->func_in[j] = func;
+          set++;
+        }
+      }
     }
   }
 

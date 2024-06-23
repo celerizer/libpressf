@@ -14,20 +14,37 @@ F8D_OP_OUT(mk4027_write)
 
   /* Write to VRAM if RAM_WRT is pulsed */
   if (!(io_data->u & RAM_WRT) && (value.u & RAM_WRT))
-  {
-    u8 x, y, c;
+    vram_write(m_vram->data, m_vram->x, m_vram->y, m_vram->color);
 
-    /* The inverse of the lowest 7 bits is the pixel X */
-    x = (m_vram->io_x->u ^ 0xFF) & B01111111;
+  *io_data = value;
+}
 
-    /* The inverse of the lowest 6 bits is the pixel Y */
-    y = (m_vram->io_y->u ^ 0xFF) & B00111111;
+F8D_OP_OUT(mk4027_color)
+{
+  vram_t *m_vram = (vram_t*)device->device;
 
-    /* The highest 2 bits is the pixel color */
-    c = (m_vram->io_color->u & B11000000) >> 6;
+  if (m_vram)
+    m_vram->color = (value.u & B11000000) >> 6;
 
-    vram_write(m_vram->data, x, y, c);
-  }
+  *io_data = value;
+}
+
+F8D_OP_OUT(mk4027_set_x)
+{
+  vram_t *m_vram = (vram_t*)device->device;
+
+  if (m_vram)
+    m_vram->x = (value.u ^ 0xFF) & B01111111;
+
+  *io_data = value;
+}
+
+F8D_OP_OUT(mk4027_set_y)
+{
+  vram_t *m_vram = (vram_t*)device->device;
+
+  if (m_vram)
+    m_vram->y = (value.u ^ 0xFF) & B00111111;
 
   *io_data = value;
 }

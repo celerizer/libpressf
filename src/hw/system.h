@@ -8,8 +8,15 @@
 
 #define F8_MAX_IO_PORTS 128
 
-/* Arbitrary limit for max number of devices hooked up to a system */
+/**
+ * Arbitrary limit for max number of devices hooked up to a system.
+ */
 #define F8_MAX_DEVICES 32
+
+/**
+ * Arbitrary limit for max number of devices on one IO port.
+ */
+#define F8_MAX_IO_LINK 2
 
 /**
  * A holder that serves as a "connection" between the emulated system and an
@@ -17,10 +24,10 @@
  **/
 typedef struct io_t
 {
-  struct f8_device_t *device_out;
-  struct f8_device_t *device_in;
-  F8D_OP_OUT_T *func_out;
-  F8D_OP_IN_T *func_in;
+  struct f8_device_t *device_out[F8_MAX_IO_LINK];
+  struct f8_device_t *device_in[F8_MAX_IO_LINK];
+  F8D_OP_OUT_T *func_out[F8_MAX_IO_LINK];
+  F8D_OP_IN_T *func_in[F8_MAX_IO_LINK];
   f8_byte data;
 } io_t;
 

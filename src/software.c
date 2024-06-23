@@ -60,18 +60,20 @@ const system_preset_t pf_systems[] =
 
       /* VRAM */
       { F8_DEVICE_MK4027, 3, 0, 0, NULL, mk4027_write },
-      { F8_DEVICE_MK4027, 3, 1, 0, NULL, NULL },
-      { F8_DEVICE_MK4027, 3, 4, 0, NULL, NULL },
-      { F8_DEVICE_MK4027, 3, 5, 0, NULL, NULL },
+      { F8_DEVICE_MK4027, 3, 1, 0, NULL, mk4027_color },
+      { F8_DEVICE_MK4027, 3, 4, 0, NULL, mk4027_set_x },
+      { F8_DEVICE_MK4027, 3, 5, 0, NULL, mk4027_set_y },
 
       /* Selector Control buttons (5 buttons on the game console) */
       { F8_DEVICE_SELECTOR_CONTROL, 4, 0, 0, selector_control_input, NULL },
 
       /* Left Hand-Controller */
       { F8_DEVICE_HAND_CONTROLLER, 5, 4, 0, hand_controller_input_4, NULL },
+      { F8_DEVICE_HAND_CONTROLLER, 5, 0, 0, NULL, hand_controller_output },
 
       /* Right Hand-Controller */
       { F8_DEVICE_HAND_CONTROLLER, 6, 1, 0, hand_controller_input_1, NULL },
+      { F8_DEVICE_HAND_CONTROLLER, 6, 0, 0, NULL, hand_controller_output },
 
       /* Beeper */
       { F8_DEVICE_BEEPER, 7, 5, 0, NULL, beeper_out },
