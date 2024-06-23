@@ -142,27 +142,6 @@ void add_bcd(f8_system_t *system, f8_byte *augend, unsigned addend)
  * 0F      : Returns NULL.
  * See Table 6-2.
  **/
-static f8_byte *isar(f8_system_t *system)
-{
-  /* Last 4 bits only */
-  u8 opcode = system->dbus.u & B00001111;
-  f8_byte *address = NULL;
-
-  if (opcode < 12)
-  {
-    /* Address scratchpad directly for first 12 bytes */
-    address = &f8_main_cpu(system)->scratchpad[opcode];
-  }
-  else if (opcode != 0x0F)
-    address = &f8_main_cpu(system)->scratchpad[ISAR & 0x3F];
-
-  if (opcode == 0x0D)
-    ISAR = (ISAR & B00111000) | ((ISAR + 1) & B00000111);
-  else if (opcode == 0x0E)
-    ISAR = (ISAR & B00111000) | ((ISAR - 1) & B00000111);
-
-  return address;
-}
 
 #define ISAR_OP(a) \
   &f8_main_cpu(system)->scratchpad[a];
