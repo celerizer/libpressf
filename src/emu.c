@@ -1427,64 +1427,129 @@ F8_OP(outs)
  * register contents remain unchanged. Depending on the value of Sreg, ISAR
  * may be unaltered, incremented, or decremented.
  */
-F8_OP(as)
-{
-  f8_byte *reg = isar(system);
 
-  if (reg != NULL)
-    add(system, &A, reg->u);
-}
+#define F8_OP_AS(a) \
+  F8_OP(as_##a) \
+  { \
+    f8_byte *reg = ISAR_OP_##a; \
+    add(system, &A, reg->u); \
+  }
 
-/*
-   D0 - DF
-   ASD (Add Source Decimal)
-   Add a register to the accumulator as binary-coded decimal.
-*/
-F8_OP(asd)
-{
-  f8_byte *reg = isar(system);
+F8_OP_AS(0)
+F8_OP_AS(1)
+F8_OP_AS(2)
+F8_OP_AS(3)
+F8_OP_AS(4)
+F8_OP_AS(5)
+F8_OP_AS(6)
+F8_OP_AS(7)
+F8_OP_AS(8)
+F8_OP_AS(9)
+F8_OP_AS(10)
+F8_OP_AS(11)
+F8_OP_AS(12)
+F8_OP_AS(13)
+F8_OP_AS(14)
+
+/**
+ * D0 - DF
+ * ASD (Add Source Decimal)
+ * Add a register to the accumulator as binary-coded decimal.
+ */
 
 #if PF_ROMC
-  romc1cs(system);
+#define F8_OP_ASD(a) \
+  F8_OP(asd_##a) \
+  { \
+    f8_byte *reg = ISAR_OP_##a; \
+    romc1cs(system); \
+    add_bcd(system, &A, reg->u); \
+  }
 #else
-  system->cycles += CYCLE_SHORT;
+#define F8_OP_ASD(a) \
+  F8_OP(asd_##a) \
+  { \
+    f8_byte *reg = ISAR_OP_##a; \
+    system->cycles += CYCLE_SHORT; \
+    add_bcd(system, &A, reg->u); \
+  }
 #endif
 
-  if (reg != NULL)
-    add_bcd(system, &A, reg->u);
-}
+F8_OP_ASD(0)
+F8_OP_ASD(1)
+F8_OP_ASD(2)
+F8_OP_ASD(3)
+F8_OP_ASD(4)
+F8_OP_ASD(5)
+F8_OP_ASD(6)
+F8_OP_ASD(7)
+F8_OP_ASD(8)
+F8_OP_ASD(9)
+F8_OP_ASD(10)
+F8_OP_ASD(11)
+F8_OP_ASD(12)
+F8_OP_ASD(13)
+F8_OP_ASD(14)
 
-/*
-   E0 - EF
-   XS (eXclusive or Source)
-   Logical XOR a register into the accumulator.
-*/
-F8_OP(xs)
-{
-  f8_byte *address = isar(system);
+/**
+ * E0 - EF
+ * XS (eXclusive or Source)
+ * Logical XOR a register into the accumulator.
+ */
 
-  if (address != NULL)
-  {
-    A.u ^= address->u;
-    update_status(system);
+#define F8_OP_XS(a) \
+  F8_OP(xs_##a) \
+  { \
+    f8_byte *reg = ISAR_OP_##a; \
+    A.u ^= reg->u; \
+    update_status(system); \
   }
-}
 
-/*
-   F0 - FF
-   NS (aNd Source)
-   Logical AND a register into the accumulator.
-*/
-F8_OP(ns)
-{
-  f8_byte *address = isar(system);
+F8_OP_XS(0)
+F8_OP_XS(1)
+F8_OP_XS(2)
+F8_OP_XS(3)
+F8_OP_XS(4)
+F8_OP_XS(5)
+F8_OP_XS(6)
+F8_OP_XS(7)
+F8_OP_XS(8)
+F8_OP_XS(9)
+F8_OP_XS(10)
+F8_OP_XS(11)
+F8_OP_XS(12)
+F8_OP_XS(13)
+F8_OP_XS(14)
 
-  if (address != NULL)
-  {
-    A.u &= address->u;
-    update_status(system);
+/**
+ * F0 - FF
+ * NS (aNd Source)
+ * Logical AND a register into the accumulator.
+ */
+
+#define F8_OP_NS(a) \
+  F8_OP(ns_##a) \
+  { \
+    f8_byte *reg = ISAR_OP_##a; \
+    A.u &= reg->u; \
+    update_status(system); \
   }
-}
+
+F8_OP_NS(0)
+F8_OP_NS(1)
+F8_OP_NS(2)
+F8_OP_NS(3)
+F8_OP_NS(4)
+F8_OP_NS(5)
+F8_OP_NS(6)
+F8_OP_NS(7)
+F8_OP_NS(8)
+F8_OP_NS(9)
+F8_OP_NS(10)
+F8_OP_NS(11)
+F8_OP_NS(12)
+F8_OP_NS(13)
+F8_OP_NS(14)
 
 /**
  * 2D - 2F
@@ -1537,10 +1602,22 @@ static F8_OP_T *operations[256] =
   bf, bf, bf, bf, bf, bf, bf, bf, bf, bf, bf, bf, bf, bf, bf, bf,
   ins, ins, ins, ins, ins, ins, ins, ins, ins, ins, ins, ins, ins, ins, ins, ins,
   outs, outs, outs, outs, outs, outs, outs, outs, outs, outs, outs, outs, outs, outs, outs, outs,
-  as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, as,
-  asd, asd, asd, asd, asd, asd, asd, asd, asd, asd, asd, asd, asd, asd, asd, asd,
-  xs, xs, xs, xs, xs, xs, xs, xs, xs, xs, xs, xs, xs, xs, xs, xs,
-  ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns
+  as_0,       as_1,       as_2,       as_3,
+  as_4,       as_5,       as_6,       as_7,
+  as_8,       as_9,       as_10,      as_11,
+  as_12,      as_13,      as_14,      invalid,
+  asd_0,      asd_1,      asd_2,      asd_3,
+  asd_4,      asd_5,      asd_6,      asd_7,
+  asd_8,      asd_9,      asd_10,     asd_11,
+  asd_12,     asd_13,     asd_14,     invalid,
+  xs_0,       xs_1,       xs_2,       xs_3,
+  xs_4,       xs_5,       xs_6,       xs_7,
+  xs_8,       xs_9,       xs_10,      xs_11,
+  xs_12,      xs_13,      xs_14,      invalid,
+  ns_0,       ns_1,       ns_2,       ns_3,
+  ns_4,       ns_5,       ns_6,       ns_7,
+  ns_8,       ns_9,       ns_10,      ns_11,
+  ns_12,      ns_13,      ns_14,      invalid,
 };
 
 u8 pressf_init(f8_system_t *system)
