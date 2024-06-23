@@ -15,6 +15,7 @@
 
 /* Helper functions */
 
+#if PF_ROMC
 /**
  * Returns whether a given virtual address is within the region a given
  * F8 device is mapped in.
@@ -37,6 +38,7 @@ static void f8device_write(f8_device_t *device, u16 address, f8_byte data)
   address -= device->start;
   device->data[address] = data;
 }
+#endif
 
 /**
  * ROMC 0 0 0 0 0 / 00 / S, L

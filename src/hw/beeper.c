@@ -9,14 +9,6 @@ static const int type = F8_DEVICE_BEEPER;
 
 static float sound_wavetable[3][PF_SOUND_SAMPLES];
 
-static const i16 SOUND_FREQUENCIES[4] =
-{
-  0,
-  1000,
-  500,
-  120
-};
-
 static void sound_push_back(f8_beeper_t *beeper, unsigned frequency)
 {
   unsigned current_tick = (unsigned)(
