@@ -82,10 +82,10 @@ typedef struct f8_device_t
    Hardware
 */
 #if PF_ROMC
-  u16 pc0;
-  u16 pc1;
-  u16 dc0;
-  u16 dc1;
+  f8_word pc0;
+  f8_word pc1;
+  f8_word dc0;
+  f8_word dc1;
 #endif
 
 /*
@@ -97,10 +97,10 @@ typedef struct f8_device_t
   mask   = 0x03FF
 */
   f8_byte *data;
-  u16   start;
-  u16   end;
-  u16   length;
-  u16   mask;
+  u16 start;
+  u16 end;
+  u16 length;
+  u16 mask;
 
   f8_device_id_t type;
 

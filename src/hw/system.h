@@ -61,10 +61,10 @@ typedef struct f8_settings_t
 
 typedef struct f8_system_t
 {
-  u16 dc0;
-  u16 dc1;
-  u16 pc0;
-  u16 pc1;
+  f8_word dc0;
+  f8_word dc1;
+  f8_word pc0;
+  f8_word pc1;
 
   f8_byte dbus;
 

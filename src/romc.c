@@ -53,25 +53,24 @@ static void f8device_write(f8_device_t *device, u16 address, f8_byte data)
 static void romc00(f8_system_t *system)
 {
   INIT_DEVICES
+  int found = FALSE;
 
 #if !PF_ROMC_REDUNDANCY
   FOREACH_DEVICE
     if (device->flags & F8_NO_PC0)
       continue;
-    if (f8device_contains(device, device->pc0))
+    else if (!found && f8device_contains(device, device->pc0.u))
     {
-      system->dbus = *f8device_vptr(device, device->pc0);
-      break;
+      system->dbus = *f8device_vptr(device, device->pc0.u);
+      found = TRUE;
     }
-  }
-  FOREACH_DEVICE
-    device->pc0++;
+    device->pc0.u += 1;
   }
 #else
   FOREACH_DEVICE
-    if (f8device_contains(device, device->pc0))
-      system->dbus = *f8device_vptr(device, device->pc0);
-      device->pc0++;
+    if (f8device_contains(device, device->pc0.u))
+      system->dbus = *f8device_vptr(device, device->pc0.u);
+    device->pc0.u += 1;
   }
 #endif
 }
@@ -102,9 +101,9 @@ void romc01(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_PC0)
       continue;
-    if (f8device_contains(device, device->pc0))
+    else if (f8device_contains(device, device->pc0.u))
     {
-      system->dbus = *f8device_vptr(device, device->pc0);
+      system->dbus = *f8device_vptr(device, device->pc0.u);
 #if !PF_ROMC_REDUNDANCY
       break;
 #endif
@@ -112,7 +111,7 @@ void romc01(f8_system_t *system)
   }
 
   FOREACH_DEVICE
-    device->pc0 += system->dbus.s;
+    device->pc0.u += system->dbus.s;
   }
 
   system->cycles += CYCLE_LONG;
@@ -131,9 +130,9 @@ void romc02(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_DC0)
       continue;
-    if (f8device_contains(device, device->dc0))
-      system->dbus = *f8device_vptr(device, device->dc0);
-    device->dc0++;
+    if (f8device_contains(device, device->dc0.u))
+      system->dbus = *f8device_vptr(device, device->dc0.u);
+    device->dc0.u += 1;
   }
 
   system->cycles += CYCLE_LONG;
@@ -185,9 +184,9 @@ void romc05(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_DC0)
       continue;
-    if (f8device_contains(device, device->dc0) && (device->flags & F8_DATA_WRITABLE))
-      f8device_write(device, device->dc0, system->dbus);
-    device->dc0++;
+    if (f8device_contains(device, device->dc0.u) && (device->flags & F8_DATA_WRITABLE))
+      f8device_write(device, device->dc0.u, system->dbus);
+    device->dc0.u += 1;
   }
 
   system->cycles += CYCLE_LONG;
@@ -202,7 +201,7 @@ void romc05(f8_system_t *system)
 */
 void romc06(f8_system_t *system)
 {
-  system->dbus.u = (system->f8devices[0].dc0 & 0xFF00) >> 8;
+  system->dbus = system->f8devices[0].dc0.bytes.h;
 
   system->cycles += CYCLE_LONG;
 }
@@ -214,7 +213,7 @@ void romc06(f8_system_t *system)
  */
 void romc07(f8_system_t *system)
 {
-  system->dbus.u = (system->f8devices[0].pc1 & 0xFF00) >> 8;
+  system->dbus = system->f8devices[0].pc1.bytes.h;
 
   system->cycles += CYCLE_LONG;
 }
@@ -233,7 +232,7 @@ void romc08(f8_system_t *system)
 
   FOREACH_DEVICE
     device->pc1 = device->pc0;
-    device->pc0 = 0;
+    device->pc0.u = 0;
   }
 
   system->cycles += CYCLE_LONG;
@@ -252,8 +251,8 @@ void romc09(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_DC0)
       continue;
-    if (f8device_contains(device, device->dc0))
-      system->dbus.u = device->dc0 & 0xFF;
+    if (f8device_contains(device, device->dc0.u))
+      system->dbus = device->dc0.bytes.l;
   }
 
   system->cycles += CYCLE_LONG;
@@ -271,7 +270,7 @@ void romc0a(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_DC0)
       continue;
-    device->dc0 += system->dbus.s;
+    device->dc0.u += system->dbus.s;
   }
 
   system->cycles += CYCLE_LONG;
@@ -290,8 +289,8 @@ void romc0b(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_PC1)
       continue;
-    if (f8device_contains(device, device->pc1))
-      system->dbus.u = device->pc1 & 0xFF;
+    if (f8device_contains(device, device->pc1.u))
+      system->dbus = device->pc1.bytes.l;
   }
 
   system->cycles += CYCLE_LONG;
@@ -311,17 +310,16 @@ void romc0c(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_PC0)
       continue;
-    if (f8device_contains(device, device->pc0))
+    else if (f8device_contains(device, device->pc0.u))
     {
-      system->dbus = *f8device_vptr(device, device->pc0);
-#if PF_ROMC_REDUNDANCY == FALSE
+      system->dbus = *f8device_vptr(device, device->pc0.u);
+#if !PF_ROMC_REDUNDANCY
       break;
 #endif
     }
   }
   FOREACH_DEVICE
-    device->pc0 &= 0xFF00;
-    device->pc0 |= system->dbus.u;
+    device->pc0.bytes.l = system->dbus;
   }
 
   system->cycles += CYCLE_LONG;
@@ -339,7 +337,7 @@ void romc0d(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_PC1)
       continue;
-    device->pc1 = device->pc0 + 1;
+    device->pc1.u = device->pc0.u + 1;
   }
 
   system->cycles += CYCLE_SHORT;
@@ -358,10 +356,10 @@ void romc0e(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_PC0)
       continue;
-    if (f8device_contains(device, device->pc0))
+    else if (f8device_contains(device, device->pc0.u))
     {
-      system->dbus = *f8device_vptr(device, device->pc0);
-#if PF_ROMC_REDUNDANCY == FALSE
+      system->dbus = *f8device_vptr(device, device->pc0.u);
+#if !PF_ROMC_REDUNDANCY
       break;
 #endif
     }
@@ -369,8 +367,7 @@ void romc0e(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_DC0)
       continue;
-    device->dc0 &= 0xFF00;
-    device->dc0 |= system->dbus.u;
+    device->dc0.bytes.l = system->dbus;
   }
 
   system->cycles += CYCLE_LONG;
@@ -396,8 +393,7 @@ void romc0f(f8_system_t *system)
     if (device->flags & F8_NO_PC0)
       continue;
     device->pc1 = device->pc0;
-    device->pc0 &= 0xFF00;
-    device->pc0 |= system->dbus.u;
+    device->pc0.bytes.l = system->dbus;
   }
 
   system->cycles += CYCLE_LONG;
@@ -426,17 +422,18 @@ void romc11(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_PC0)
       continue;
-    if (f8device_contains(device, device->pc0))
-      system->dbus = *f8device_vptr(device, device->pc0);
-#if PF_ROMC_REDUNDANCY
-    break;
+    else if (f8device_contains(device, device->pc0.u))
+    {
+      system->dbus = *f8device_vptr(device, device->pc0.u);
+#if !PF_ROMC_REDUNDANCY
+      break;
 #endif
+    }
   }
   FOREACH_DEVICE
     if (device->flags & F8_NO_DC0)
       continue;
-    device->dc0 &= 0x00FF;
-    device->dc0 |= system->dbus.u << 8;
+    device->dc0.bytes.h = system->dbus;
   }
 
   system->cycles += CYCLE_LONG;
@@ -455,8 +452,7 @@ void romc12(f8_system_t *system)
     if (device->flags & F8_NO_PC0)
       continue;
     device->pc1 = device->pc0;
-    device->pc0 &= 0xFF00;
-    device->pc0 |= system->dbus.u;
+    device->pc0.bytes.l = system->dbus;
   }
 
   system->cycles += CYCLE_LONG;
@@ -482,8 +478,7 @@ void romc14(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_PC0)
       continue;
-    device->pc0 &= 0x00FF;
-    device->pc0 |= system->dbus.u << 8;
+    device->pc0.bytes.h = system->dbus;
   }
 
   system->cycles += CYCLE_LONG;
@@ -500,8 +495,7 @@ void romc15(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_PC1)
       continue;
-    device->pc1 &= 0x00FF;
-    device->pc1 |= system->dbus.u << 8;
+    device->pc1.bytes.h = system->dbus;
   }
 
   system->cycles += CYCLE_LONG;
@@ -518,8 +512,7 @@ void romc16(f8_system_t *system)
    FOREACH_DEVICE
      if (device->flags & F8_NO_DC0)
        continue;
-     device->dc0 &= 0x00FF;
-     device->dc0 |= system->dbus.u << 8;
+     device->dc0.bytes.h = system->dbus;
    }
 
    system->cycles += CYCLE_LONG;
@@ -536,8 +529,7 @@ void romc17(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_PC0)
       continue;
-    device->pc0 &= 0xFF00;
-    device->pc0 |= system->dbus.u;
+    device->pc0.bytes.l = system->dbus;
   }
 
   system->cycles += CYCLE_LONG;
@@ -554,8 +546,7 @@ void romc18(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_PC1)
       continue;
-    device->pc1 &= 0xFF00;
-    device->pc1 |= system->dbus.u;
+    device->pc1.bytes.l = system->dbus;
   }
 
   system->cycles += CYCLE_LONG;
@@ -572,8 +563,7 @@ void romc19(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_DC0)
       continue;
-    device->dc0 &= 0xFF00;
-    device->dc0 |= system->dbus.u;
+    device->dc0.bytes.l = system->dbus;
   }
 
   system->cycles += CYCLE_LONG;
@@ -630,7 +620,7 @@ void romc1cl(f8_system_t *system)
 void romc1d(f8_system_t *system)
 {
   INIT_DEVICES
-  u16 temp;
+  f8_word temp;
 
   FOREACH_DEVICE
     if (device->flags & F8_NO_DC1)
@@ -655,9 +645,9 @@ void romc1e(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_PC0)
       continue;
-    else if (f8device_contains(device, device->pc0))
+    else if (f8device_contains(device, device->pc0.u))
     {
-      system->dbus.u = device->pc0 & 0xFF;
+      system->dbus = device->pc0.bytes.l;
 #if !PF_ROMC_REDUNDANCY
       break;
 #endif
@@ -679,9 +669,9 @@ void romc1f(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_PC0)
       continue;
-    else if (f8device_contains(device, device->pc0))
+    else if (f8device_contains(device, device->pc0.u))
     {
-      system->dbus.u = (device->pc0 & 0xFF00) >> 8;
+      system->dbus = device->pc0.bytes.h;
 #if !PF_ROMC_REDUNDANCY
       break;
 #endif

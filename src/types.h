@@ -1,6 +1,8 @@
 #ifndef PRESS_F_TYPES_H
 #define PRESS_F_TYPES_H
 
+#include "config.h"
+
 #define i8 signed char
 #define u8 unsigned char
 #define i16 signed short
@@ -13,6 +15,34 @@ typedef union
   u8 u;
   i8 s;
 } f8_byte;
+
+/**
+ * A 16-bit value in native endianness.
+ */
+typedef union
+{
+  struct
+  {
+#if F8_BIG_ENDIAN
+    f8_byte h;
+    f8_byte l;
+#else
+    f8_byte l;
+    f8_byte h;
+#endif
+  } bytes;
+  unsigned short u;
+  signed short i;
+} f8_word;
+
+/**
+ * A 16-bit value in explicit big endianness.
+ */
+typedef struct
+{
+  f8_byte h;
+  f8_byte l;
+} h8_word_be;
 
 #ifndef TRUE
 #define TRUE 1

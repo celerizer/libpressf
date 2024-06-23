@@ -33,7 +33,7 @@ HLE(init)
    * 0001 - 0009
    * Reset all scratchpad registers to 00
    */
-  memset(cpu->scratchpad, 0, SCRATCH_SIZE);
+  memset(cpu->scratchpad, 0, F3850_SCRATCH_SIZE);
 
   /*
    * 000A - 000E
@@ -47,9 +47,9 @@ HLE(init)
    * Jump to either the built-in game or the inserted cartridge
    */
   if (!f8_read(system, &check_byte, 0x0800, 1) || check_byte.u != 0x55)
-    PC0 = 0x001A - 1;
+    PC0.u = 0x001A - 1;
   else
-    PC0 = 0x0802 - 1;
+    PC0.u = 0x0802 - 1;
 }
 
 /* 001A - 001F */
@@ -57,14 +57,14 @@ HLE(no_cart_init)
 {
   /* Run the screen clear routine */
   f8_main_cpu(system)->scratchpad[0x03].u = 0xD6;
-  PC0 = 0x00D0 - 1;
+  PC0.u = 0x00D0 - 1;
 }
 
 /* 00D0 - 00D5 */
 HLE(clear_screen)
 {
   memset(((vram_t*)system->f8devices[3].device)->data, 0, VRAM_SIZE);
-  PC0 = PC1 - 1;
+  PC0.u = PC1.u - 1;
 }
 
 /*
@@ -79,11 +79,11 @@ HLE(push_k)
 
   stack.u = f8_main_cpu(system)->scratchpad[59].u & B00111111;
 
-  f8_main_cpu(system)->scratchpad[7].u = f8_main_cpu(system)->isar;
+  f8_main_cpu(system)->scratchpad[7].u = f8_main_cpu(system)->isar.raw.data;
   memcpy(&f8_main_cpu(system)->scratchpad[stack.u], &f8_main_cpu(system)->scratchpad[12], 2);
   f8_main_cpu(system)->scratchpad[59].u = stack.u + 2;
 
-  PC0 = PC1 - 1;
+  PC0.u = PC1.u - 1;
 }
 
 /*
