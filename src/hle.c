@@ -7,6 +7,8 @@
 #include "screen.h"
 #include "hw/vram.h"
 
+#if PF_HAVE_HLE_BIOS
+
 #define HLE(a) void a(f8_system_t *system)
 
 #if PF_ROMC
@@ -185,5 +187,7 @@ void* hle_get_func_from_addr(u16 address)
 
   return NULL;
 }
+
+#endif
 
 #endif
