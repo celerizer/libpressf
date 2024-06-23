@@ -12,6 +12,7 @@ F8D_OP_OUT(hand_controller_output)
 {
   f8_hand_controller_t *m_hc = device->device;
 
+  /* This bit is set ON during vram writes */
   if (m_hc)
     m_hc->enabled = value.u & HAND_CONTROLLER_ENABLE ? FALSE : TRUE;
 

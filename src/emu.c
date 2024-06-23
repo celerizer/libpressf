@@ -76,8 +76,6 @@ opcode_t opcodes[256] =
 
 #define F8_OP(a) void a(f8_system_t *system)
 
-static void (*operations[256])(f8_system_t *system);
-
 unsigned get_status(f8_system_t *system, const unsigned flag)
 {
   return (W & flag) != 0;
@@ -165,6 +163,33 @@ static f8_byte *isar(f8_system_t *system)
 
   return address;
 }
+
+#define ISAR_OP(a) \
+  &f8_main_cpu(system)->scratchpad[a];
+
+#define ISAR_OP_0 ISAR_OP(0)
+#define ISAR_OP_1 ISAR_OP(1)
+#define ISAR_OP_2 ISAR_OP(2)
+#define ISAR_OP_3 ISAR_OP(3)
+#define ISAR_OP_4 ISAR_OP(4)
+#define ISAR_OP_5 ISAR_OP(5)
+#define ISAR_OP_6 ISAR_OP(6)
+#define ISAR_OP_7 ISAR_OP(7)
+#define ISAR_OP_8 ISAR_OP(8)
+#define ISAR_OP_9 ISAR_OP(9)
+#define ISAR_OP_10 ISAR_OP(10)
+#define ISAR_OP_11 ISAR_OP(11)
+
+#define ISAR_OP_12 \
+  &f8_main_cpu(system)->scratchpad[ISAR & 0x3F];
+
+#define ISAR_OP_13 \
+  &f8_main_cpu(system)->scratchpad[ISAR & 0x3F]; \
+  ISAR = (ISAR & B00111000) | ((ISAR + 1) & B00000111);
+
+#define ISAR_OP_14 \
+  &f8_main_cpu(system)->scratchpad[ISAR & 0x3F]; \
+  ISAR = (ISAR & B00111000) | ((ISAR - 1) & B00000111);
 
 static void update_status(f8_system_t *system)
 {
@@ -878,42 +903,88 @@ F8_OP(xdc)
  * The content of the scratchpad register addressed by the operand (Sreg) is
  * decremented by one binary count. The decrement is performed by adding H'FF'
  * to the scratchpad register.
- * @todo Macro and unroll this
  */
-F8_OP(ds)
-{
-  f8_byte *address = isar(system);
 
-  if (address != NULL)
-    add(system, address, 0xFF);
+#define F8_OP_DS(a) \
+  F8_OP(ds_##a) \
+  { \
+    f8_byte *address = ISAR_OP_##a; \
+    add(system, address, 0xFF); \
+    /* This operation retrieves the next with a long-cycle ROMC00. */ \
+    system->cycles += CYCLE_LONG - CYCLE_SHORT; \
+  }
 
-  /* This operation retrieves the next with a long-cycle ROMC00. */
-  system->cycles += CYCLE_LONG - CYCLE_SHORT;
-}
+F8_OP_DS(0)
+F8_OP_DS(1)
+F8_OP_DS(2)
+F8_OP_DS(3)
+F8_OP_DS(4)
+F8_OP_DS(5)
+F8_OP_DS(6)
+F8_OP_DS(7)
+F8_OP_DS(8)
+F8_OP_DS(9)
+F8_OP_DS(10)
+F8_OP_DS(11)
+F8_OP_DS(12)
+F8_OP_DS(13)
+F8_OP_DS(14)
 
 /**
  * 40 - 4F
  * LR A, r - Load Register
  */
-F8_OP(lr_a_r)
-{
-  f8_byte *address = isar(system);
 
-  if (address)
-    A = *address;
-}
+#define F8_OP_LR_A_R(a) \
+  F8_OP(lr_a_r_##a) \
+  { \
+    f8_byte *address = ISAR_OP_##a; \
+    A = *address; \
+  }
+
+F8_OP_LR_A_R(0)
+F8_OP_LR_A_R(1)
+F8_OP_LR_A_R(2)
+F8_OP_LR_A_R(3)
+F8_OP_LR_A_R(4)
+F8_OP_LR_A_R(5)
+F8_OP_LR_A_R(6)
+F8_OP_LR_A_R(7)
+F8_OP_LR_A_R(8)
+F8_OP_LR_A_R(9)
+F8_OP_LR_A_R(10)
+F8_OP_LR_A_R(11)
+F8_OP_LR_A_R(12)
+F8_OP_LR_A_R(13)
+F8_OP_LR_A_R(14)
 
 /**
  * 50 - 5F
  * LR r, A - Load Register
  */
-F8_OP(lr_r_a)
-{
-  f8_byte *address = isar(system);
 
-  if (address)
-    *address = A;
-}
+#define F8_OP_LR_R_A(a) \
+  F8_OP(lr_r_a_##a) \
+  { \
+    f8_byte *address = ISAR_OP_##a; \
+    *address = A; \
+  }
+
+F8_OP_LR_R_A(0)
+F8_OP_LR_R_A(1)
+F8_OP_LR_R_A(2)
+F8_OP_LR_R_A(3)
+F8_OP_LR_R_A(4)
+F8_OP_LR_R_A(5)
+F8_OP_LR_R_A(6)
+F8_OP_LR_R_A(7)
+F8_OP_LR_R_A(8)
+F8_OP_LR_R_A(9)
+F8_OP_LR_R_A(10)
+F8_OP_LR_R_A(11)
+F8_OP_LR_R_A(12)
+F8_OP_LR_R_A(13)
+F8_OP_LR_R_A(14)
 
 /**
  * 60 - 67
@@ -922,14 +993,22 @@ F8_OP(lr_r_a)
  * three most significant bits of the ISAR. The three least significant bits
  * of the ISAR are not altered.
  */
-F8_OP(lisu)
-{
-  unsigned immediate = system->dbus.u & B00000111;
 
-  /* Mask to lower 3 bits, load new upper */
-  ISAR &= B00000111;
-  ISAR |= immediate << 3;
-}
+#define F8_OP_LISU(a) \
+  F8_OP(lisu_##a) \
+  { \
+    ISAR &= B00000111; \
+    ISAR |= a << 3; \
+  }
+
+F8_OP_LISU(0)
+F8_OP_LISU(1)
+F8_OP_LISU(2)
+F8_OP_LISU(3)
+F8_OP_LISU(4)
+F8_OP_LISU(5)
+F8_OP_LISU(6)
+F8_OP_LISU(7)
 
 /**
  * 68 - 6F
@@ -938,14 +1017,22 @@ F8_OP(lisu)
  * three least significant bits of the ISAR. The three most significant bits
  * of the ISAR are not altered.
  */
-F8_OP(lisl)
-{
-  unsigned immediate = system->dbus.u & B00000111;
 
-  /* Mask to upper 3 bits, load new lower */
-  ISAR &= B00111000;
-  ISAR |= immediate;
-}
+#define F8_OP_LISL(a) \
+  F8_OP(lisl_##a) \
+  { \
+    ISAR &= B00111000; \
+    ISAR |= a; \
+  }
+
+F8_OP_LISL(0)
+F8_OP_LISL(1)
+F8_OP_LISL(2)
+F8_OP_LISL(3)
+F8_OP_LISL(4)
+F8_OP_LISL(5)
+F8_OP_LISL(6)
+F8_OP_LISL(7)
 
 /**
  * 70
@@ -961,7 +1048,7 @@ F8_OP(lisl)
  * bits of the accumulator are set to ''0''.
  */
 
-#define F8_OP_LIS(a) F8_OP(lis##a) { A.u = a; }
+#define F8_OP_LIS(a) F8_OP(lis_##a) { A.u = a; }
 F8_OP_LIS(0)
 F8_OP_LIS(1)
 F8_OP_LIS(2)
@@ -981,7 +1068,7 @@ F8_OP_LIS(15)
 
 #if PF_ROMC
 #define F8_OP_BT(a) \
-  F8_OP(bt##a) \
+  F8_OP(bt_##a) \
   { \
     romc1cs(system); \
     if (a & W) \
@@ -991,7 +1078,7 @@ F8_OP_LIS(15)
   }
 #else
 #define F8_OP_BT(a) \
-  F8_OP(bt##a) \
+  F8_OP(bt_##a) \
   { \
     if (a & W) \
     { \
@@ -1408,156 +1495,66 @@ F8_OP(invalid)
   nop(system);
 }
 
-/*
 typedef void F8_OP_T(f8_system_t*);
-static F8_OP_T *guh[256] =
+static F8_OP_T *operations[256] =
 {
   lr_a_ku,    lr_a_kl,    lr_a_qu,    lr_a_ql,
   lr_ku_a,    lr_kl_a,    lr_qu_a,    lr_ql_a,
   lr_k_pc1,   lr_pc1_k,   lr_a_isar,  lr_isar_a,
   pk,         lr_pc0_q,   lr_q_dc0,   lr_dc0_q,
-
   lr_dc0_h,   lr_h_dc0,   sr_a,       sl_a,
   sr_a_4,     sl_a_4,     lm,         st,
   com,        lnk,        di,         ei,
   pop,        lr_w_j,     lr_j_w,     inc,
-
   li,         ni,         oi,         xi,
   ai,         ci,         in,         out,
   pi,         jmp,        dci,        nop,
   xdc,        invalid,    invalid,    invalid,
-
-  ds0, ds1, ds2, ds3, ds4, ds5, ds6, ds7,
-  ds8, ds9, ds10, ds11, ds12, ds13, ds14, ds15,
+  ds_0,       ds_1,       ds_2,       ds_3,
+  ds_4,       ds_5,       ds_6,       ds_7,
+  ds_8,       ds_9,       ds_10,      ds_11,
+  ds_12,      ds_13,      ds_14,      invalid,
+  lr_a_r_0,   lr_a_r_1,   lr_a_r_2,   lr_a_r_3,
+  lr_a_r_4,   lr_a_r_5,   lr_a_r_6,   lr_a_r_7,
+  lr_a_r_8,   lr_a_r_9,   lr_a_r_10,  lr_a_r_11,
+  lr_a_r_12,  lr_a_r_13,  lr_a_r_14,  invalid,
+  lr_r_a_0,   lr_r_a_1,   lr_r_a_2,   lr_r_a_3,
+  lr_r_a_4,   lr_r_a_5,   lr_r_a_6,   lr_r_a_7,
+  lr_r_a_8,   lr_r_a_9,   lr_r_a_10,  lr_r_a_11,
+  lr_r_a_12,  lr_r_a_13,  lr_r_a_14,  invalid,
+  lisu_0,     lisu_1,     lisu_2,     lisu_3,
+  lisu_4,     lisu_5,     lisu_6,     lisu_7,
+  lisl_0,     lisl_1,     lisl_2,     lisl_3,
+  lisl_4,     lisl_5,     lisl_6,     lisl_7,
+  lis_0,      lis_1,      lis_2,      lis_3,
+  lis_4,      lis_5,      lis_6,      lis_7,
+  lis_8,      lis_9,      lis_10,     lis_11,
+  lis_12,     lis_13,     lis_14,     lis_15,
+  bt_0,       bt_1,       bt_2,       bt_3,
+  bt_4,       bt_5,       bt_6,       bt_7,
+  am,         amd,        nm,         om,
+  xm,         cm,         adc,        br7,
+  bf, bf, bf, bf, bf, bf, bf, bf, bf, bf, bf, bf, bf, bf, bf, bf,
+  ins, ins, ins, ins, ins, ins, ins, ins, ins, ins, ins, ins, ins, ins, ins, ins,
+  outs, outs, outs, outs, outs, outs, outs, outs, outs, outs, outs, outs, outs, outs, outs, outs,
+  as, as, as, as, as, as, as, as, as, as, as, as, as, as, as, as,
+  asd, asd, asd, asd, asd, asd, asd, asd, asd, asd, asd, asd, asd, asd, asd, asd,
+  xs, xs, xs, xs, xs, xs, xs, xs, xs, xs, xs, xs, xs, xs, xs, xs,
+  ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns, ns
 };
-*/
 
 u8 pressf_init(f8_system_t *system)
 {
-  u32 i = 0;
-
   if (!system)
     return FALSE;
-  
-  memset(system, 0, sizeof(f8_system_t));
+  else
+  {
+    memset(system, 0, sizeof(f8_system_t));
+    system->total_cycles = PF_CHANNEL_F_CLOCK_NTSC;
+    f3850_init(&system->f8devices[0]);
 
-   operations[0x00] = lr_a_ku;
-   operations[0x01] = lr_a_kl;
-   operations[0x02] = lr_a_qu;
-   operations[0x03] = lr_a_ql;
-   operations[0x04] = lr_ku_a;
-   operations[0x05] = lr_kl_a;
-   operations[0x06] = lr_qu_a;
-   operations[0x07] = lr_ql_a;
-   operations[0x08] = lr_k_pc1;
-   operations[0x09] = lr_pc1_k;
-   operations[0x0A] = lr_a_isar;
-   operations[0x0B] = lr_isar_a;
-   operations[0x0C] = pk;
-   operations[0x0D] = lr_pc0_q;
-   operations[0x0E] = lr_q_dc0;
-   operations[0x0F] = lr_dc0_q;
-
-   for (i = 0x00; i < 0x08; i++)
-   {
-      operations[0x60 + i] = lisu;
-      operations[0x68 + i] = lisl;
-   }
-   for (i = 0x00; i < 0x10; i++)
-   {
-      operations[0x30 + i] = ds;
-      operations[0x40 + i] = lr_a_r;
-      operations[0x50 + i] = lr_r_a;
-      operations[0x90 + i] = bf;
-      operations[0xA0 + i] = ins;
-      operations[0xB0 + i] = outs;
-      operations[0xC0 + i] = as;
-      operations[0xD0 + i] = asd;
-      operations[0xE0 + i] = xs;
-      operations[0xF0 + i] = ns;
-   }
-   operations[0x10] = lr_dc0_h;
-   operations[0x11] = lr_h_dc0;
-   operations[0x12] = sr_a;
-   operations[0x13] = sl_a;
-   operations[0x14] = sr_a_4;
-   operations[0x15] = sl_a_4;
-   operations[0x16] = lm;
-   operations[0x17] = st;
-   operations[0x18] = com;
-   operations[0x19] = lnk;
-   operations[0x1A] = di;
-   operations[0x1B] = ei;
-   operations[0x1C] = pop;
-   operations[0x1D] = lr_w_j;
-   operations[0x1E] = lr_j_w;
-   operations[0x1F] = inc;
-
-   operations[0x20] = li;
-   operations[0x21] = ni;
-   operations[0x22] = oi;
-   operations[0x23] = xi;
-   operations[0x24] = ai;
-   operations[0x25] = ci;
-   operations[0x26] = in;
-   operations[0x27] = out;
-   operations[0x28] = pi;
-   operations[0x29] = jmp;
-   operations[0x2A] = dci;
-   operations[0x2B] = nop;
-   operations[0x2C] = xdc;
-   operations[0x2D] = invalid;
-   operations[0x2E] = invalid;
-   operations[0x2F] = invalid;
-
-   operations[0x70] = lis0;
-   operations[0x71] = lis1;
-   operations[0x72] = lis2;
-   operations[0x73] = lis3;
-   operations[0x74] = lis4;
-   operations[0x75] = lis5;
-   operations[0x76] = lis6;
-   operations[0x77] = lis7;
-   operations[0x78] = lis8;
-   operations[0x79] = lis9;
-   operations[0x7A] = lis10;
-   operations[0x7B] = lis11;
-   operations[0x7C] = lis12;
-   operations[0x7D] = lis13;
-   operations[0x7E] = lis14;
-   operations[0x7F] = lis15;
-
-   operations[0x80] = bt0;
-   operations[0x81] = bt1;
-   operations[0x82] = bt2;
-   operations[0x83] = bt3;
-   operations[0x84] = bt4;
-   operations[0x85] = bt5;
-   operations[0x86] = bt6;
-   operations[0x87] = bt7;
-
-   operations[0x88] = am;
-   operations[0x89] = amd;
-   operations[0x8A] = nm;
-   operations[0x8B] = om;
-   operations[0x8C] = xm;
-   operations[0x8D] = cm;
-   operations[0x8E] = adc;
-   operations[0x8F] = br7;
-
-   operations[0x3F] = invalid;
-   operations[0x4F] = invalid;
-   operations[0x5F] = invalid;
-   operations[0xCF] = invalid;
-   operations[0xDF] = invalid;
-   operations[0xEF] = invalid;
-   operations[0xFF] = invalid;
-
-   system->total_cycles = PF_CHANNEL_F_CLOCK_NTSC;
-
-   f3850_init(&system->f8devices[0]);
-
-   return TRUE;
+    return TRUE;
+  }
 }
 
 /**
