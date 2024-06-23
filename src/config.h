@@ -20,6 +20,13 @@
 #endif
 
 /**
+ * Whether or not build target is a big-endian machine.
+ */
+#ifndef PF_BIG_ENDIAN
+#define PF_BIG_ENDIAN FALSE
+#endif
+
+/**
  * Enable the debugger.
  */
 #ifndef PF_DEBUGGER

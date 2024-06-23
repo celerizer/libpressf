@@ -10,6 +10,20 @@
 #define i32 signed long
 #define u32 unsigned long
 
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+#define F8_UNUSED(a) (void)a
+
 typedef union
 {
   u8 u;
@@ -23,7 +37,7 @@ typedef union
 {
   struct
   {
-#if F8_BIG_ENDIAN
+#if PF_BIG_ENDIAN
     f8_byte h;
     f8_byte l;
 #else
@@ -43,20 +57,6 @@ typedef struct
   f8_byte h;
   f8_byte l;
 } h8_word_be;
-
-#ifndef TRUE
-#define TRUE 1
-#endif
-
-#ifndef FALSE
-#define FALSE 0
-#endif
-
-#ifndef NULL
-#define NULL 0
-#endif
-
-#define F8_UNUSED(a) (void)a
 
 /* 2-bit binary constants */
 #define B00 0x0
