@@ -31,6 +31,20 @@ typedef struct io_t
   f8_byte data;
 } io_t;
 
+enum f8_f3850_clock
+{
+  /* 1.7897725MHz */
+  F8_CLOCK_CHANNEL_F_NTSC = 298295417,
+
+  /* 2.000000MHz */
+  F8_CLOCK_CHANNEL_F_PAL_GEN_1 = 333333333,
+
+  /* 1.970491MHz */
+  F8_CLOCK_CHANNEL_F_PAL_GEN_2 = 328415167
+};
+
+#define F8_MHZ_TO_CLOCK(a) (a * 1000000 / 60 * 10000)
+
 /* Runtime options */
 typedef struct f8_settings_t
 {
@@ -39,6 +53,16 @@ typedef struct f8_settings_t
    * See "software.h"
    */
   u8 default_system;
+
+  /**
+   * The clock speed of the main 3850 CPU. Represented as the unsigned integer
+   * result of: MHz * 1,000,000 Hz/MHz / 60 frames/second * 10,000 (constant
+   * used for some level of decimal precision as an integer). In other words,
+   * CPU MHz * 166666666.667.
+   * Should be able to be safely changed at runtime.
+   * @see f8_f3850_clock
+   */
+  int f3850_clock_speed;
 
   /**
    * Bool: Always hookup a 2114 chip at $2800 under Channel F series presets.
@@ -80,7 +104,6 @@ typedef struct f8_system_t
   f8_byte dbus;
 
   int cycles;
-  int total_cycles;
 
   f8_device_t f8devices[F8_MAX_DEVICES];
   unsigned f8device_count;

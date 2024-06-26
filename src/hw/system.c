@@ -241,6 +241,7 @@ u8 f8_settings_apply_default(struct f8_system_t *system)
   const f8_settings_t f8_settings_default =
   {
     F8_SYSTEM_CHANNEL_F,
+    F8_CLOCK_CHANNEL_F_NTSC,
     FALSE,
     FALSE,
     FALSE,

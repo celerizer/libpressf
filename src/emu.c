@@ -65,15 +65,6 @@ opcode_t opcodes[256] =
 
 };
 
-/* 1789772.5Hz / 60 * 10000 */
-#define PF_CHANNEL_F_CLOCK_NTSC 298295417
-
-/* 2000000Hz / 60 * 10000 */
-#define PF_CHANNEL_F_CLOCK_PAL_GEN_1 333333333
-
-/* 1970491Hz / 60 * 10000 */
-#define PF_CHANNEL_F_CLOCK_PAL_GEN_2 328415167
-
 #define F8_OP(a) void a(f8_system_t *system)
 
 unsigned get_status(f8_system_t *system, const unsigned flag)
@@ -1138,7 +1129,7 @@ F8_OP(outs)
       if (io->device_out[i]->set_timing)
         io->device_out[i]->set_timing(io->device_out[i],
                                       system->cycles,
-                                      system->total_cycles);
+                                      system->settings.f3850_clock_speed);
       io->func_out[i](io->device_out[i], &io->data, A);
     }
   }
@@ -1345,7 +1336,7 @@ u8 pressf_init(f8_system_t *system)
   else
   {
     memset(system, 0, sizeof(f8_system_t));
-    system->total_cycles = PF_CHANNEL_F_CLOCK_NTSC;
+    f8_settings_apply_default(system);
     f3850_init(&system->f8devices[0]);
 
     return TRUE;
@@ -1366,8 +1357,6 @@ void pressf_step(f8_system_t *system)
     return;
 #endif
 
-  romc00s(system);
-
 #if PF_HAVE_HLE_BIOS
   if (hle_func)
   {
@@ -1376,6 +1365,7 @@ void pressf_step(f8_system_t *system)
   }
 #endif
   operations[system->dbus.u](system);
+  romc00s(system);
 }
 
 u8 pressf_run(f8_system_t *system)
@@ -1388,8 +1378,8 @@ u8 pressf_run(f8_system_t *system)
 
     /* Step through a frame worth of cycles */
     do pressf_step(system);
-    while (system->total_cycles > system->cycles);
-    system->cycles -= system->total_cycles;
+    while (system->settings.f3850_clock_speed > system->cycles);
+    system->cycles -= system->settings.f3850_clock_speed;
 
     /* Run the "on finish frame" callback for all devices */
     for (i = 0; i < system->f8device_count; i++)
