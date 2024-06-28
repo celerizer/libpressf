@@ -173,6 +173,7 @@ static void update_status(f8_system_t *system)
 F8_OP(lr_a_ku)
 {
   A = KU;
+  romc00s(system);
 }
 
 /**
@@ -182,6 +183,7 @@ F8_OP(lr_a_ku)
 F8_OP(lr_a_kl)
 {
   A = KL;
+  romc00s(system);
 }
 
 /**
@@ -191,6 +193,7 @@ F8_OP(lr_a_kl)
 F8_OP(lr_a_qu)
 {
   A = QU;
+  romc00s(system);
 }
 
 /**
@@ -200,6 +203,7 @@ F8_OP(lr_a_qu)
 F8_OP(lr_a_ql)
 {
   A = QL;
+  romc00s(system);
 }
 
 /**
@@ -209,6 +213,7 @@ F8_OP(lr_a_ql)
 F8_OP(lr_ku_a)
 {
   KU = A;
+  romc00s(system);
 }
 
 /**
@@ -218,6 +223,7 @@ F8_OP(lr_ku_a)
 F8_OP(lr_kl_a)
 {
   KL = A;
+  romc00s(system);
 }
 
 /**
@@ -227,6 +233,7 @@ F8_OP(lr_kl_a)
 F8_OP(lr_qu_a)
 {
   QU = A;
+  romc00s(system);
 }
 
 /**
@@ -236,6 +243,7 @@ F8_OP(lr_qu_a)
 F8_OP(lr_ql_a)
 {
   QL = A;
+  romc00s(system);
 }
 
 /*
@@ -249,6 +257,7 @@ F8_OP(lr_k_pc1)
   KU = system->dbus;
   romc0b(system);
   KL = system->dbus;
+  romc00s(system);
 }
 
 /*
@@ -262,18 +271,21 @@ F8_OP(lr_pc1_k)
   romc15(system);
   system->dbus = KL;
   romc18(system);
+  romc00s(system);
 }
 
 /* 0A */
 F8_OP(lr_a_isar)
 {
   A.u = ISAR & B00111111;
+  romc00s(system);
 }
 
 /* 0B */
 F8_OP(lr_isar_a)
 {
   ISAR = A.u & B00111111;
+  romc00s(system);
 }
 
 /* 0C */
@@ -284,6 +296,7 @@ F8_OP(pk)
   romc12(system);
   system->dbus = KU;
   romc14(system);
+  romc00s(system);
 }
 
 /* 0D */
@@ -293,6 +306,7 @@ F8_OP(lr_pc0_q)
   romc17(system);
   system->dbus = QU;
   romc14(system);
+  romc00s(system);
 }
 
 /* 0E */
@@ -302,6 +316,7 @@ F8_OP(lr_q_dc0)
   QU = system->dbus;
   romc09(system);
   QL = system->dbus;
+  romc00s(system);
 }
 
 /* 0F */
@@ -311,6 +326,7 @@ F8_OP(lr_dc0_q)
   romc16(system);
   system->dbus = QL;
   romc19(system);
+  romc00s(system);
 }
 
 /* 10 */
@@ -320,6 +336,7 @@ F8_OP(lr_dc0_h)
   romc16(system);
   system->dbus = HL;
   romc19(system);
+  romc00s(system);
 }
 
 /* 11 */
@@ -329,6 +346,7 @@ F8_OP(lr_h_dc0)
   HU = system->dbus;
   romc09(system);
   HL = system->dbus;
+  romc00s(system);
 }
 
 static void shift(f8_system_t *system, unsigned right, unsigned amount)
@@ -349,6 +367,7 @@ static void shift(f8_system_t *system, unsigned right, unsigned amount)
 F8_OP(sr_a)
 {
   shift(system, TRUE, 1);
+  romc00s(system);
 }
 
 /**
@@ -360,18 +379,21 @@ F8_OP(sr_a)
 F8_OP(sl_a)
 {
   shift(system, FALSE, 1);
+  romc00s(system);
 }
 
 /* 14 */
 F8_OP(sr_a_4)
 {
   shift(system, TRUE, 4);
+  romc00s(system);
 }
 
 /* 15 */
 F8_OP(sl_a_4)
 {
   shift(system, FALSE, 4);
+  romc00s(system);
 }
 
 /**
@@ -385,6 +407,7 @@ F8_OP(lm)
 {
   romc02(system);
   A = system->dbus;
+  romc00s(system);
 }
 
 /**
@@ -399,6 +422,7 @@ F8_OP(st)
 {
   system->dbus = A;
   romc05(system);
+  romc00s(system);
 }
 
 /**
@@ -410,6 +434,7 @@ F8_OP(com)
 {
   A.u ^= 0xFF;
   update_status(system);
+  romc00s(system);
 }
 
 /**
@@ -421,6 +446,7 @@ F8_OP(com)
 F8_OP(lnk)
 {
   add(system, &A, get_status(system, STATUS_CARRY));
+  romc00s(system);
 }
 
 /**
@@ -433,6 +459,7 @@ F8_OP(di)
 {
   romc1cs(system);
   set_status(system, STATUS_INTERRUPTS, FALSE);
+  romc00s(system);
 }
 
 /**
@@ -445,6 +472,7 @@ F8_OP(ei)
 {
   romc1cs(system);
   set_status(system, STATUS_INTERRUPTS, TRUE);
+  romc00s(system);
 }
 
 /**
@@ -456,6 +484,7 @@ F8_OP(ei)
 F8_OP(pop)
 {
   romc04(system);
+  romc00s(system);
 }
 
 /* 1D */
@@ -463,12 +492,14 @@ F8_OP(lr_w_j)
 {
   romc1cs(system);
   W = J.u & B00011111;
+  romc00s(system);
 }
 
 /* 1E */
 F8_OP(lr_j_w)
 {
   J.u = W & B00011111;
+  romc00s(system);
 }
 
 /**
@@ -479,6 +510,7 @@ F8_OP(lr_j_w)
 F8_OP(inc)
 {
   add(system, &A, 1);
+  romc00s(system);
 }
 
 /**
@@ -491,6 +523,7 @@ F8_OP(li)
 {
   romc03l(system);
   A = system->dbus;
+  romc00s(system);
 }
 
 /**
@@ -504,6 +537,7 @@ F8_OP(ni)
   romc03l(system);
   A.u &= system->dbus.u;
   add(system, &A, 0);
+  romc00s(system);
 }
 
 /**
@@ -517,6 +551,7 @@ F8_OP(oi)
   romc03l(system);
   A.u |= system->dbus.u;
   add(system, &A, 0);
+  romc00s(system);
 }
 
 /**
@@ -531,6 +566,7 @@ F8_OP(xi)
   romc03l(system);
   A.u ^= system->dbus.u;
   add(system, &A, 0);
+  romc00s(system);
 }
 
 /**
@@ -544,6 +580,7 @@ F8_OP(ai)
 {
   romc03l(system);
   add(system, &A, system->dbus.u);
+  romc00s(system);
 }
 
 /**
@@ -560,6 +597,7 @@ F8_OP(ci)
   romc03l(system);
   immediate = system->dbus;
   add(system, &immediate, (~A.u & 0xFF) + 1);
+  romc00s(system);
 }
 
 /**
@@ -588,6 +626,7 @@ F8_OP(in)
 
   A = io->data;
   add(system, &A, 0);
+  romc00s(system);
 }
 
 /**
@@ -628,6 +667,7 @@ F8_OP(out)
     io->data = A;
 
   system->cycles += CYCLE_LONG;
+  romc00s(system);
 }
 
 /**
@@ -647,6 +687,7 @@ F8_OP(pi)
   romc0c(system);
   system->dbus = A;
   romc14(system);
+  romc00s(system);
 }
 
 /**
@@ -668,6 +709,7 @@ F8_OP(jmp)
   romc0c(system);
   system->dbus = A;
   romc14(system);
+  romc00s(system);
 }
 
 /**
@@ -683,6 +725,7 @@ F8_OP(dci)
   romc03s(system);
   romc0e(system);
   romc03s(system);
+  romc00s(system);
 }
 
 /**
@@ -692,8 +735,7 @@ F8_OP(dci)
  */
 F8_OP(nop)
 {
-  /* This does nothing to intentionally silence a warning */
-  (void)system;
+  romc00s(system);
 }
 
 /**
@@ -709,6 +751,7 @@ F8_OP(nop)
 F8_OP(xdc)
 {
   romc1d(system);
+  romc00s(system);
 }
 
 /**
@@ -724,8 +767,7 @@ F8_OP(xdc)
   { \
     f8_byte *address = ISAR_OP_##a; \
     add(system, address, 0xFF); \
-    /* This operation retrieves the next with a long-cycle ROMC00. */ \
-    system->cycles += CYCLE_LONG - CYCLE_SHORT; \
+    romc00l(system); \
   }
 
 F8_OP_DS(0)
@@ -754,6 +796,7 @@ F8_OP_DS(14)
   { \
     f8_byte *address = ISAR_OP_##a; \
     A = *address; \
+    romc00s(system); \
   }
 
 F8_OP_LR_A_R(0)
@@ -782,6 +825,7 @@ F8_OP_LR_A_R(14)
   { \
     f8_byte *address = ISAR_OP_##a; \
     *address = A; \
+    romc00s(system); \
   }
 
 F8_OP_LR_R_A(0)
@@ -813,6 +857,7 @@ F8_OP_LR_R_A(14)
   { \
     ISAR &= B00000111; \
     ISAR |= a << 3; \
+    romc00s(system); \
   }
 
 F8_OP_LISU(0)
@@ -837,6 +882,7 @@ F8_OP_LISU(7)
   { \
     ISAR &= B00111000; \
     ISAR |= a; \
+    romc00s(system); \
   }
 
 F8_OP_LISL(0)
@@ -862,7 +908,13 @@ F8_OP_LISL(7)
  * bits of the accumulator are set to ''0''.
  */
 
-#define F8_OP_LIS(a) F8_OP(lis_##a) { A.u = a; }
+#define F8_OP_LIS(a) \
+  F8_OP(lis_##a) \
+  { \
+    A.u = a; \
+    romc00s(system); \
+  }
+
 F8_OP_LIS(0)
 F8_OP_LIS(1)
 F8_OP_LIS(2)
@@ -888,6 +940,7 @@ F8_OP_LIS(15)
       romc01(system); \
     else \
       romc03s(system); \
+    romc00s(system); \
   }
 
 /**
@@ -952,6 +1005,7 @@ F8_OP(am)
 {
   romc02(system);
   add(system, &A, system->dbus.u);
+  romc00s(system);
 }
 
 /**
@@ -966,6 +1020,7 @@ F8_OP(amd)
 {
   romc02(system);
   add_bcd(system, &A, system->dbus.u);
+  romc00s(system);
 }
 
 /**
@@ -980,6 +1035,7 @@ F8_OP(nm)
   romc02(system);
   A.u &= system->dbus.u;
   update_status(system);
+  romc00s(system);
 }
 
 /**
@@ -993,6 +1049,7 @@ F8_OP(om)
   romc02(system);
   A.u |= system->dbus.u;
   update_status(system);
+  romc00s(system);
 }
 
 /**
@@ -1005,6 +1062,7 @@ F8_OP(xm)
   romc02(system);
   A.u ^= system->dbus.u;
   update_status(system);
+  romc00s(system);
 }
 
 /**
@@ -1023,6 +1081,7 @@ F8_OP(cm)
   romc02(system);
   temp = system->dbus;
   add(system, &temp, (~A.u & 0xFF) + 1);
+  romc00s(system);
 }
 
 /**
@@ -1037,6 +1096,7 @@ F8_OP(adc)
 {
   system->dbus = A;
   romc0a(system);
+  romc00s(system);
 }
 
 /**
@@ -1050,6 +1110,7 @@ F8_OP(br7)
     romc01(system);
   else
     romc03s(system);
+  romc00s(system);
 }
 
 /**
@@ -1064,6 +1125,7 @@ F8_OP(bf)
     romc01(system);
   else
     romc03s(system);
+  romc00s(system);
 }
 
 /**
@@ -1096,6 +1158,7 @@ F8_OP(ins)
   A = io->data;
 
   add(system, &A, 0);
+  romc00s(system);
 }
 
 /**
@@ -1135,6 +1198,8 @@ F8_OP(outs)
   }
   if (!found)
     io->data = A;
+
+  romc00s(system);
 }
 
 /**
@@ -1152,6 +1217,7 @@ F8_OP(outs)
   { \
     f8_byte *reg = ISAR_OP_##a; \
     add(system, &A, reg->u); \
+    romc00s(system); \
   }
 
 F8_OP_AS(0)
@@ -1182,6 +1248,7 @@ F8_OP_AS(14)
     f8_byte *reg = ISAR_OP_##a; \
     romc1cs(system); \
     add_bcd(system, &A, reg->u); \
+    romc00s(system); \
   }
 
 F8_OP_ASD(0)
@@ -1212,6 +1279,7 @@ F8_OP_ASD(14)
     f8_byte *reg = ISAR_OP_##a; \
     A.u ^= reg->u; \
     update_status(system); \
+    romc00s(system); \
   }
 
 F8_OP_XS(0)
@@ -1242,6 +1310,7 @@ F8_OP_XS(14)
     f8_byte *reg = ISAR_OP_##a; \
     A.u &= reg->u; \
     update_status(system); \
+    romc00s(system); \
   }
 
 F8_OP_NS(0)
@@ -1266,7 +1335,7 @@ F8_OP_NS(14)
  */
 F8_OP(invalid)
 {
-  nop(system);
+  romc00s(system);
 }
 
 typedef void F8_OP_T(f8_system_t*);
@@ -1365,7 +1434,6 @@ void pressf_step(f8_system_t *system)
   }
 #endif
   operations[system->dbus.u](system);
-  romc00s(system);
 }
 
 u8 pressf_run(f8_system_t *system)
