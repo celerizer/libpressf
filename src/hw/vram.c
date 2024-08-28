@@ -1,7 +1,6 @@
 #include "vram.h"
+#include "../dma.h"
 #include "../screen.h"
-
-#include <stdlib.h>
 
 static const char *name = "VRAM";
 static const int type = F8_DEVICE_MK4027;
@@ -53,7 +52,7 @@ void vram_init(f8_device_t *device)
 {
   if (device)
   {
-    device->device = (vram_t*)malloc(sizeof(vram_t));
+    device->device = (vram_t*)pf_dma_alloc(sizeof(vram_t), FALSE);
     device->name = name;
     device->type = type;
     device->flags = F8_NO_ROMC;
