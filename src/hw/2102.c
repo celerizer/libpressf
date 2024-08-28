@@ -1,8 +1,4 @@
-#ifndef PRESS_F_2102_C
-#define PRESS_F_2102_C
-
-#include <stdlib.h>
-#include <string.h>
+#include "../dma.h"
 
 #include "2102.h"
 
@@ -93,7 +89,7 @@ void f2102_init(f8_device_t *device)
      return;
    else
    {
-     f2102_t *m_f2102 = (f2102_t*)calloc(sizeof(f2102_t), 1);
+     f2102_t *m_f2102 = (f2102_t*)pf_dma_alloc(sizeof(f2102_t), TRUE);
      device->device = m_f2102;
      device->data = m_f2102->data;
      device->name = name;
@@ -123,5 +119,3 @@ void f2102_unserialize(void *buffer, unsigned size, unsigned *offset, f8_device_
   *offset += sizeof(f2102_t);
   */
 }
-
-#endif
