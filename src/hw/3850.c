@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include "../dma.h"
 
 #include "3850.h"
 
@@ -9,7 +9,7 @@ void f3850_init(f8_device_t *device)
 {
   if (device)
   {
-    device->device = (f3850_t*)calloc(sizeof(f3850_t), 1);
+    device->device = (f3850_t*)pf_dma_alloc(sizeof(f3850_t), TRUE);
     device->name = name;
     device->type = type;
 
