@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include "../dma.h"
 
 #include "f8_device.h"
 
@@ -28,7 +28,7 @@ void f8_generic_init(f8_device_t *device, unsigned size)
 {
   if (device)
   {
-    device->data = malloc(size);
+    device->data = pf_dma_alloc(size);
     device->length = size;
   }
 }
