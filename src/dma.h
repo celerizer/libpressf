@@ -7,4 +7,6 @@ void *pf_dma_alloc(unsigned size, unsigned zero);
 
 void pf_dma_free(void *value);
 
+void pf_dma_set_oom_cb(void *cb);
+
 #endif
