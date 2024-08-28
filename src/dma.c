@@ -9,6 +9,8 @@ void pf_dma_oom_cb_default(void)
 static u8 pf_heap[PF_NO_DMA_SIZE];
 static unsigned pf_heap_alloc = 0;
 static void (*pf_dma_oom_cb)(void) = pf_dma_oom_cb_default;
+#else
+#include <stdlib.h>
 #endif
 
 void *pf_dma_alloc(unsigned size, unsigned zero)
