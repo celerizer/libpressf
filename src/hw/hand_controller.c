@@ -1,6 +1,6 @@
-#include <stdlib.h>
-
+#include "../dma.h"
 #include "../input.h"
+
 #include "hand_controller.h"
 
 static const char *name = "Hand-Controller";
@@ -39,7 +39,7 @@ void hand_controller_init(f8_device_t *device)
 {
   if (device)
   {
-    device->device = (f8_hand_controller_t*)malloc(sizeof(f8_hand_controller_t));
+    device->device = (f8_hand_controller_t*)pf_dma_alloc(sizeof(f8_hand_controller_t), FALSE);
     device->name = name;
     device->type = type;
     device->flags = F8_NO_ROMC;
