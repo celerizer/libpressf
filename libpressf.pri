@@ -1,5 +1,6 @@
 SOURCES += \
     $$PWD/src/debug.c \
+    $$PWD/src/dma.c \
     $$PWD/src/emu.c \
     $$PWD/src/font.c \
     $$PWD/src/hle.c \
@@ -24,6 +25,7 @@ SOURCES += \
 HEADERS += \
     $$PWD/src/config.h \
     $$PWD/src/debug.h \
+    $$PWD/src/dma.h \
     $$PWD/src/emu.h \
     $$PWD/src/font.h \
     $$PWD/src/hle.h \

@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include "../dma.h"
 
 #include "f8_device.h"
 
@@ -28,7 +28,10 @@ void f8_generic_init(f8_device_t *device, unsigned size)
 {
   if (device)
   {
-    device->data = malloc(size);
+    /* Only allocate if mot using fixed memory map */
+#if PF_ROMC
+    device->data = pf_dma_alloc(size, FALSE);
+#endif
     device->length = size;
   }
 }

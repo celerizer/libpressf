@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "debug.h"
@@ -1406,7 +1405,6 @@ u8 pressf_init(f8_system_t *system)
   {
     memset(system, 0, sizeof(f8_system_t));
     f8_settings_apply_default(system);
-    f3850_init(&system->f8devices[0]);
 
     return TRUE;
   }

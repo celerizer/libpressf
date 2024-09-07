@@ -1,5 +1,4 @@
-#include <stdlib.h>
-
+#include "../dma.h"
 #include "../wave.h"
 
 #include "beeper.h"
@@ -107,7 +106,7 @@ void beeper_init(f8_device_t *device)
 #endif
   if (device)
   {
-    device->device = (f8_beeper_t*)calloc(1, sizeof(f8_beeper_t));
+    device->device = (f8_beeper_t*)pf_dma_alloc(sizeof(f8_beeper_t), TRUE);
     device->name = name;
     device->type = type;
     device->flags = F8_NO_ROMC;
