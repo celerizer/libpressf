@@ -1,5 +1,5 @@
 #ifndef PRESS_F_DMA_H
-#ifndef PRESS_F_DMA_H
+#define PRESS_F_DMA_H
 
 #include "config.h"
 

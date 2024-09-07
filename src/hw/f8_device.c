@@ -26,14 +26,12 @@ void f8_generic_unserialize(f8_device_t *device, const void *buffer, unsigned *s
 
 void f8_generic_init(f8_device_t *device, unsigned size)
 {
-#if PF_ROMC
   if (device)
   {
-    device->data = pf_dma_alloc(size);
+    /* Only allocate if mot using fixed memory map */
+#if PF_ROMC
+    device->data = pf_dma_alloc(size, FALSE);
+#endif
     device->length = size;
   }
-#else
-  F8_UNUSED(device);
-  F8_UNUSED(size);
-#endif
 }
