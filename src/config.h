@@ -87,6 +87,25 @@ PF_STATIC_ASSERT(!(PF_SOUND_FREQUENCY % 60),
 #endif
 
 /**
+ * When set, the program is compiled without using dynamic memory allocation
+ * via malloc/free. The program in this state will instead use a static
+ * fixed-size heap, shared between all emulator instances. Use only if
+ * absolutely necessary, such as on very limited embedded platforms.
+ *
+ * Requires PF_ROMC to be FALSE and a heap size (in bytes) must be
+ * defined as PRESS_F_NO_DMA_SIZE.
+ */
+#ifndef PF_NO_DMA
+#define PF_NO_DMA FALSE
+#else
+#if !defined(PF_NO_DMA_SIZE) || PF_NO_DMA_SIZE <= 0
+#error "Static heap size not specified (define PF_NO_DMA_SIZE)."
+#elif PF_ROMC
+#error "PF_ROMC must be defined as FALSE if using no DMA."
+#endif
+#endif
+
+/**
  * Controls whether or not to emulate ROMC functions.
  * Not emulating ROMC allows for using simpler instruction sets, but removes
  * some functionality.
