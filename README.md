@@ -7,7 +7,7 @@ libpressf is an emulation library for Fairchild F8 family systems, used in the f
 - [Press F Ultra](https://github.com/celerizer/Press-F-Ultra), a Channel F emulator for the Nintendo 64 video game console
 - [Press F Thumby](https://github.com/celerizer/Press-F-Thumby), a Channel F emulator for the RP2040-based Thumby microconsole
 
-libpressf is written to maintain maximum compatibility across different build targets by adhering to C89 standards and minimizing the use of standard libraries. It promotes encapsulation as well as functional programming paradigms.
+libpressf is written to maintain maximum compatibility across different build targets by adhering to C89 standards and minimizing the use of standard libraries.
 
 ## Building
 
@@ -15,6 +15,13 @@ libpressf is written to maintain maximum compatibility across different build ta
 
 ```make
 include libpressf/libpressf.mk
+```
+
+- Add the exported `PRESS_F_SOURCES` and `PRESS_F_HEADERS` to your project makefile:
+
+```make
+SOURCES += $(PRESS_F_SOURCES)
+HEADERS += $(PRESS_F_HEADERS)
 ```
 
 - Add any compile-time options you wish to change. A list of all compile-time options along with their default values can be found in `config.h`. As an example:
