@@ -41,7 +41,7 @@
 #define PF_STATIC_ASSERTS FALSE
 #endif
 #if PF_STATIC_ASSERTS
-#define PF_STATIC_ASSERT(a, b) static_assert(a, b)
+#define PF_STATIC_ASSERT(a, b) static_assert(a, b);
 #else
 #define PF_STATIC_ASSERT(a, b)
 #endif
@@ -54,7 +54,7 @@
 #define PF_SOUND_FREQUENCY 44100
 #endif
 PF_STATIC_ASSERT(!(PF_SOUND_FREQUENCY % 60),
-                 "Audio frequency not evenly divisible by 60");
+                 "Audio frequency not evenly divisible by 60")
 
 #ifndef PF_SOUND_DECAY
 #define PF_SOUND_DECAY (1.0f - 77.0f / PF_SOUND_FREQUENCY)
