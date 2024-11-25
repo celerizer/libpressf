@@ -6,6 +6,7 @@ static const int type = F8_DEVICE_FAIRBUG_PARALLEL;
 
 F8D_OP_IN(fairbug_parallel_io)
 {
+  F8_UNUSED(device);
   io_data->u = get_keyboard_char();
 }
 
