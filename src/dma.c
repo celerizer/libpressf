@@ -4,13 +4,7 @@
 static u8 pf_heap[PF_NO_DMA_SIZE];
 static unsigned pf_heap_alloc = 0;
 
-void pf_dma_oom_cb_default(void)
-{
-  printf("Out of memory error! (%u of %u)\n", pf_heap_alloc, PF_NO_DMA_SIZE);
-  exit(1);
-}
-
-static void (*pf_dma_oom_cb)(void) = pf_dma_oom_cb_default;
+static void (*pf_dma_oom_cb)(void) = NULL;
 #else
 #include <stdlib.h>
 #endif
