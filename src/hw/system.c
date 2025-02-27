@@ -163,6 +163,7 @@ f8_byte f8_fetch(f8_system_t *system, unsigned address)
 unsigned f8_read(f8_system_t *system, void *dest, unsigned address,
                  unsigned size)
 {
+#if PF_ROMC
   unsigned i;
 
   for (i = 0; i < system->f8device_count; i++)
@@ -177,6 +178,13 @@ unsigned f8_read(f8_system_t *system, void *dest, unsigned address,
       return size;
     }
   }
+#else
+  if (size && size + address <= sizeof(system->memory))
+  {
+    memcpy(dest, &system->memory[address], size);
+    return size;
+  }
+#endif
 
   return 0;
 }
@@ -187,6 +195,7 @@ unsigned f8_read(f8_system_t *system, void *dest, unsigned address,
 unsigned f8_write(f8_system_t *system, unsigned address, const void *src,
                   unsigned size)
 {
+#if PF_ROMC
   unsigned i;
 
   for (i = 0; i < system->f8device_count; i++)
@@ -201,6 +210,13 @@ unsigned f8_write(f8_system_t *system, unsigned address, const void *src,
       return TRUE;
     }
   }
+#else
+  if (size && size + address <= sizeof(system->memory))
+  {
+    memcpy(&system->memory[address], src, size);
+    return TRUE;
+  }
+#endif
 
   return FALSE;
 }
