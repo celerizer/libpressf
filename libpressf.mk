@@ -51,7 +51,7 @@ PRESS_F_HEADERS := \
 
 PRESS_F_WAVETABLES_CC = gcc
 PRESS_F_WAVETABLES_CFLAGS = -Wall -Wextra -O2
-PRESS_F_WAVETABLES_TARGET = wavetables
+PRESS_F_WAVETABLES_TARGET = wavetables-bin
 PRESS_F_WAVETABLES_SRC = $(PRESS_F_ROOT_DIR)/src/wavetables/main.c $(PRESS_F_ROOT_DIR)/src/wave.c
 
 .PHONY: all run clean
