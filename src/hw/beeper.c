@@ -14,22 +14,27 @@ static u8 sound_wavetables_initted = FALSE;
 #endif
 
 #if PF_AUDIO_ENABLE
-
 static void sound_push_back(f8_beeper_t *beeper, unsigned frequency)
 {
-  unsigned current_tick = (beeper->current_cycles * PF_SOUND_SAMPLES) / beeper->total_cycles;
+  unsigned current_tick;
+
+  if (beeper->current_cycles >= beeper->total_cycles)
+    current_tick = PF_SOUND_SAMPLES - 1;
+  else if (beeper->total_cycles >= PF_SOUND_SAMPLES)
+    current_tick = (beeper->current_cycles / (beeper->total_cycles / PF_SOUND_SAMPLES));
+  else
+    current_tick = (beeper->current_cycles * PF_SOUND_SAMPLES) / beeper->total_cycles;
 
   if (current_tick != beeper->last_tick)
   {
     unsigned i;
 
-    for (i = beeper->last_tick; i < current_tick, i < PF_SOUND_SAMPLES; i++)
+    for (i = beeper->last_tick; i < current_tick; i++)
       beeper->frequencies[i] = beeper->frequency_last;
   }
   beeper->last_tick = current_tick;
   beeper->frequency_last = frequency;
 }
-
 #endif
 
 F8D_OP_OUT(beeper_out)
