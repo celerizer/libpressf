@@ -58,9 +58,6 @@ typedef struct system_preset_t
   software_hookup_t hookups[SYSTEM_HOOKUP_MAX];
 } system_preset_t;
 
-extern const software_t pf_software[];
-extern const system_preset_t pf_systems[];
-
 const software_t* software_identify(const void *data, u32 size);
 
 #endif

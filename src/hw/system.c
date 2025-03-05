@@ -11,6 +11,59 @@
 #include "beeper.h"
 #include "schach_led.h"
 
+static const system_preset_t f8_systems[] =
+{
+  {
+    "Fairchild Channel F",
+    F8_SYSTEM_CHANNEL_F,
+    {
+      /* Program ROM */
+      { F8_DEVICE_3851, 1, 0, 0x0000, NULL, NULL },
+      { F8_DEVICE_3851, 2, 0, 0x0400, NULL, NULL },
+
+      /* VRAM */
+      { F8_DEVICE_MK4027, 3, 0, 0, NULL, mk4027_write },
+      { F8_DEVICE_MK4027, 3, 1, 0, NULL, mk4027_color },
+      { F8_DEVICE_MK4027, 3, 4, 0, NULL, mk4027_set_x },
+      { F8_DEVICE_MK4027, 3, 5, 0, NULL, mk4027_set_y },
+
+      /* Selector Control buttons (5 buttons on the game console) */
+      { F8_DEVICE_SELECTOR_CONTROL, 4, 0, 0, selector_control_input, NULL },
+
+      /* Left Hand-Controller */
+      { F8_DEVICE_HAND_CONTROLLER, 5, 4, 0, hand_controller_input_4, NULL },
+      { F8_DEVICE_HAND_CONTROLLER, 5, 0, 0, NULL, hand_controller_output },
+
+      /* Right Hand-Controller */
+      { F8_DEVICE_HAND_CONTROLLER, 6, 1, 0, hand_controller_input_1, NULL },
+      { F8_DEVICE_HAND_CONTROLLER, 6, 0, 0, NULL, hand_controller_output },
+
+      /* Beeper */
+      { F8_DEVICE_BEEPER, 7, 5, 0, NULL, beeper_out },
+
+      /* Cartridge ROM */
+      { F8_DEVICE_3851, 8, 0, 0x800, NULL, NULL },
+      { F8_DEVICE_3851, 9, 0, 0xC00, NULL, NULL },
+      { F8_DEVICE_3851, 10, 0, 0x1000, NULL, NULL },
+      { F8_DEVICE_3851, 11, 0, 0x1400, NULL, NULL },
+      { F8_DEVICE_3851, 12, 0, 0x1800, NULL, NULL },
+      { F8_DEVICE_3851, 13, 0, 0x1C00, NULL, NULL },
+      { F8_DEVICE_3851, 14, 0, 0x2000, NULL, NULL },
+      { F8_DEVICE_3851, 15, 0, 0x2400, NULL, NULL },
+
+      { F8_DEVICE_2114, 16, 0, 0x2800, NULL, NULL },
+      { F8_DEVICE_2114, 17, 0, 0x2A00, NULL, NULL },
+      { F8_DEVICE_2114, 18, 0, 0x2C00, NULL, NULL },
+      { F8_DEVICE_2114, 19, 0, 0x2E00, NULL, NULL },
+      { F8_DEVICE_SCHACH_LED, 20, 0, 0x3800, NULL, NULL },
+
+      { F8_DEVICE_INVALID, 0, 0, 0, NULL, NULL }
+    }
+  },
+
+  { NULL, F8_SYSTEM_UNKNOWN, { { F8_DEVICE_INVALID, 0, 0, 0, NULL, NULL } } }
+};
+
 f3850_t* f8_main_cpu(f8_system_t *system)
 {
   return system->f8devices[0].device;
@@ -78,7 +131,7 @@ u8 f8_device_set_start(f8_device_t *device, unsigned start)
   return FALSE;
 }
 
-u8 f8_system_init(f8_system_t *system, const system_preset_t *preset)
+u8 f8_system_init_preset(f8_system_t *system, const system_preset_t *preset)
 {
   unsigned i, j;
 
@@ -149,6 +202,22 @@ u8 f8_system_init(f8_system_t *system, const system_preset_t *preset)
   system->f8device_count = j;
 
   return TRUE;
+}
+
+u8 f8_system_init(f8_system_t *system, unsigned id)
+{
+  unsigned i = 0;
+
+  if (id == F8_SYSTEM_UNKNOWN || id >= F8_SYSTEM_SIZE)
+    return FALSE;
+  else while (f8_systems[i].system)
+  {
+    if (f8_systems[i].system == id)
+      return f8_system_init_preset(system, &f8_systems[i]);
+    i++;
+  }
+
+  return FALSE;
 }
 
 f8_byte f8_fetch(f8_system_t *system, unsigned address)

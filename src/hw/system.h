@@ -164,7 +164,9 @@ u8 f8_settings_apply(f8_system_t *system, f8_settings_t settings);
 
 u8 f8_settings_apply_default(f8_system_t *system);
 
-u8 f8_system_init(f8_system_t *system, const system_preset_t *preset);
+u8 f8_system_init_preset(f8_system_t *system, const system_preset_t *preset);
+
+u8 f8_system_init(f8_system_t *system, unsigned id);
 
 /**
  * Finds every F8 device in the system with a given type, and sets the function
