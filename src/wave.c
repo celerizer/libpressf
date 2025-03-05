@@ -38,3 +38,14 @@ float pf_wave(float x, u8 cosine)
 
   return result;
 }
+
+void pf_generate_wavetables(u8 table[3][PF_SOUND_SAMPLES])
+{
+  unsigned i, j;
+
+  for (j = 0; j < 3; j++)
+  {
+    for (i = 0; i < PF_SOUND_SAMPLES; i++)
+      table[j][i] = pf_wave((2 * PF_PI * (j == 0 ? 1000 : j == 1 ? 500 : 120) * (float)i * PF_SOUND_PERIOD), FALSE) > 0 ? 1 : 0;
+  }
+}

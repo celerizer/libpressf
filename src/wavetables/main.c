@@ -23,6 +23,8 @@ int main()
                 "#ifndef PRESS_F_SIN_H\n#define PRESS_F_SIN_H\n\n");
   fprintf(file, "static const unsigned char sound_wavetable[3][PF_SOUND_SAMPLES] = {\n");
 
+  pf_generate_wavetables(sound_wavetable);
+
   for (int j = 0; j < 3; j++)
   {
     fprintf(file, "  { ");

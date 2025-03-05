@@ -10,4 +10,6 @@
 
 float pf_wave(float x, u8 cosine);
 
+void pf_generate_wavetables(u8 table[3][PF_SOUND_SAMPLES]);
+
 #endif

@@ -5,7 +5,13 @@
 static const char *name = "Beeper";
 static const int type = F8_DEVICE_BEEPER;
 
+#if !PF_FLOATING_POINT
 #include "../wavetables/sin.h"
+#else
+#include "../wave.h"
+static u8 sound_wavetable[3][PF_SOUND_SAMPLES];
+static u8 sound_wavetables_initted = FALSE;
+#endif
 
 #if PF_AUDIO_ENABLE
 
@@ -92,6 +98,13 @@ void beeper_finish_frame(f8_device_t *device)
 
 void beeper_init(f8_device_t *device)
 {
+#if PF_FLOATING_POINT
+  if (!sound_wavetables_initted)
+  {
+    pf_generate_wavetables(sound_wavetable);
+    sound_wavetables_initted = TRUE;
+  }
+#endif
   if (device)
   {
     device->device = (f8_beeper_t*)pf_dma_alloc(sizeof(f8_beeper_t), TRUE);
