@@ -21,8 +21,7 @@ PRESS_F_SOURCES := \
   $(PRESS_F_ROOT_DIR)/src/input.c \
   $(PRESS_F_ROOT_DIR)/src/romc.c \
   $(PRESS_F_ROOT_DIR)/src/screen.c \
-  $(PRESS_F_ROOT_DIR)/src/software.c \
-  $(PRESS_F_ROOT_DIR)/src/wave.c
+  $(PRESS_F_ROOT_DIR)/src/software.c
 
 PRESS_F_HEADERS := \
   $(PRESS_F_ROOT_DIR)/src/config.h \
@@ -48,5 +47,17 @@ PRESS_F_HEADERS := \
   $(PRESS_F_ROOT_DIR)/src/romc.h \
   $(PRESS_F_ROOT_DIR)/src/screen.h \
   $(PRESS_F_ROOT_DIR)/src/software.h \
-  $(PRESS_F_ROOT_DIR)/src/types.h \
-  $(PRESS_F_ROOT_DIR)/src/wave.h
+  $(PRESS_F_ROOT_DIR)/src/types.h
+
+PRESS_F_WAVETABLES_CC = gcc
+PRESS_F_WAVETABLES_CFLAGS = -Wall -Wextra -O2
+PRESS_F_WAVETABLES_TARGET = wavetables-bin
+PRESS_F_WAVETABLES_SRC = $(PRESS_F_ROOT_DIR)/src/wavetables/main.c $(PRESS_F_ROOT_DIR)/src/wave.c
+
+.PHONY: all run clean
+
+all: $(PRESS_F_WAVETABLES_TARGET)
+
+$(PRESS_F_WAVETABLES_TARGET): $(PRESS_F_WAVETABLES_SRC)
+	cd $(PRESS_F_ROOT_DIR) && $(PRESS_F_WAVETABLES_CC) $(PRESS_F_WAVETABLES_CFLAGS) $(CFLAGS) -o $(PRESS_F_WAVETABLES_TARGET) $(PRESS_F_WAVETABLES_SRC) -lm && \
+  ./$(PRESS_F_WAVETABLES_TARGET)

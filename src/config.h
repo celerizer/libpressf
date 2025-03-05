@@ -69,6 +69,14 @@ PF_STATIC_ASSERT(!(PF_SOUND_FREQUENCY % 60),
 #endif
 
 /**
+ * Whether or not the build target supports floating point operations.
+ * If FALSE, the program will rely on pregenerated wavetables for sound.
+ */
+#ifndef PF_FLOATING_POINT
+#define PF_FLOATING_POINT TRUE
+#endif
+
+/**
  * Determine whether HLE BIOS implementations should be used.
  * @todo This should be a runtime option as well.
  */
