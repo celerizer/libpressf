@@ -6,7 +6,7 @@
 
 #define INIT_DEVICES \
   f8_device_t *device; \
-  u8 i;
+  unsigned i;
 
 #define FOREACH_DEVICE \
   for (i = 0; i < system->f8device_count; i++) \
@@ -20,15 +20,20 @@
  * Returns whether a given virtual address is within the region a given
  * F8 device is mapped in.
  */
-static u8 f8device_contains(f8_device_t* device, u16 address)
+static u8 f8device_contains(const f8_device_t *device, u16 address)
 {
-  return device->length && address >= device->start && address <= device->end;
+  return device->length && (address >= device->start) && (address <= device->end);
 }
 
-static f8_byte *f8device_vptr(f8_device_t *device, u16 address)
+static f8_byte *f8device_vptr(const f8_device_t *device, u16 address)
 {
-  address -= device->start;
-  return &device->data[address];
+  if (device->length)
+  {
+    address -= device->start;
+    return &device->data[address];
+  }
+  else
+    return NULL;
 }
 
 static void f8device_write(f8_device_t *device, u16 address, f8_byte data)
@@ -137,12 +142,16 @@ void romc02(f8_system_t *system)
 {
 #if PF_ROMC
   INIT_DEVICES
+  int found = FALSE;
 
   FOREACH_DEVICE
     if (device->flags & F8_NO_DC0)
       continue;
-    if (f8device_contains(device, device->dc0.u))
+    if (!found && f8device_contains(device, device->dc0.u))
+    {
+      found = TRUE;
       system->dbus = *f8device_vptr(device, device->dc0.u);
+    }
     device->dc0.u += 1;
   }
 #else
@@ -204,7 +213,7 @@ void romc05(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_DC0)
       continue;
-    if (f8device_contains(device, device->dc0.u) && (device->flags & F8_DATA_WRITABLE))
+    if (f8device_contains(device, device->dc0.u))
       f8device_write(device, device->dc0.u, system->dbus);
     device->dc0.u += 1;
   }

@@ -134,7 +134,10 @@ u8 f8_system_init(f8_system_t *system, const system_preset_t *preset)
 
       /* Setup ROMC-enabled devices */
       device->start = hookup->start;
-      device->end = hookup->start + device->length - 1;
+      if (device->length)
+        device->end = hookup->start + device->length - 1;
+      else
+        device->end = 0;
 
       /**
        * If using simple ROMC mode, map to contiguous memory.

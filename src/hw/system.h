@@ -92,12 +92,11 @@ typedef struct f8_settings_t
 
 typedef struct f8_system_t
 {
+#if !PF_ROMC
   f8_word dc0;
   f8_word dc1;
   f8_word pc0;
   f8_word pc1;
-
-#if !PF_ROMC
   f8_byte memory[0x10000];
 #endif
 

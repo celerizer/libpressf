@@ -94,6 +94,9 @@ const system_preset_t pf_systems[] =
       { F8_DEVICE_2114, 19, 0, 0x2E00, NULL, NULL },
       { F8_DEVICE_SCHACH_LED, 20, 0, 0x3800, NULL, NULL },
 
+      { F8_DEVICE_2102, 21, 0x25, 0, NULL, f2102_out_write },
+      { F8_DEVICE_2102, 21, 0x24, 0, NULL, f2102_out_address },
+
       { F8_DEVICE_INVALID, 0, 0, 0, NULL, NULL }
     }
   }
