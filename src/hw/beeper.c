@@ -1,34 +1,29 @@
 #include "../dma.h"
-#include "../wave.h"
 
 #include "beeper.h"
 
 static const char *name = "Beeper";
 static const int type = F8_DEVICE_BEEPER;
 
-#if PF_AUDIO_ENABLE
-static u8 sound_wavetable[3][PF_SOUND_SAMPLES];
-static u8 sound_wavetables_compiled = FALSE;
-#endif
+#include "../wavetables/sin.h"
 
 #if PF_AUDIO_ENABLE
+
 static void sound_push_back(f8_beeper_t *beeper, unsigned frequency)
 {
-  unsigned current_tick = (unsigned)(
-    PF_SOUND_SAMPLES *
-    (float)beeper->current_cycles /
-    (float)beeper->total_cycles);
+  unsigned current_tick = (beeper->current_cycles * PF_SOUND_SAMPLES) / beeper->total_cycles;
 
   if (current_tick != beeper->last_tick)
   {
     unsigned i;
 
-    for (i = beeper->last_tick; i < current_tick; i++)
+    for (i = beeper->last_tick; i < current_tick, i < PF_SOUND_SAMPLES; i++)
       beeper->frequencies[i] = beeper->frequency_last;
   }
   beeper->last_tick = current_tick;
-  beeper->frequency_last = (u8)frequency;
+  beeper->frequency_last = frequency;
 }
+
 #endif
 
 F8D_OP_OUT(beeper_out)
@@ -66,7 +61,9 @@ void beeper_finish_frame(f8_device_t *device)
     {
       /* Sound was turned off, reset the amplitude so our next sound pops */
       m_beeper->time = 0;
+#if PF_FLOATING_POINT
       m_beeper->amplitude = PF_MAX_AMPLITUDE;
+#endif
       m_beeper->samples[2 * i] = 0;
       m_beeper->samples[2 * i + 1] = 0;
     }
@@ -75,11 +72,16 @@ void beeper_finish_frame(f8_device_t *device)
       /* Use sine wave to tell if our square wave is on or off */
       u8 on = sound_wavetable[m_beeper->frequencies[i] - 1]
                              [m_beeper->time % PF_SOUND_SAMPLES];
-      short final_sample = on ? (short)(m_beeper->amplitude) : 0;
-
+#if PF_FLOATING_POINT
+      short final_sample = on ? (short)m_beeper->amplitude : 0;
+#else
+      short final_sample = on ? PF_MAX_AMPLITUDE : 0;
+#endif
       m_beeper->samples[2 * i] = final_sample;
       m_beeper->samples[2 * i + 1] = final_sample;
+#if PF_FLOATING_POINT
       m_beeper->amplitude *= PF_SOUND_DECAY;
+#endif
     }
   }
   m_beeper->last_tick = 0;
@@ -90,20 +92,6 @@ void beeper_finish_frame(f8_device_t *device)
 
 void beeper_init(f8_device_t *device)
 {
-#if PF_AUDIO_ENABLE
-  int i;
-
-  if (!sound_wavetables_compiled)
-  {
-    for (i = 0; i < PF_SOUND_SAMPLES; i++)
-    {
-      sound_wavetable[0][i] = pf_wave((2 * PF_PI * 1000 * (float)i * PF_SOUND_PERIOD), FALSE) > 0 ? 1 : 0;
-      sound_wavetable[1][i] = pf_wave((2 * PF_PI * 500 * (float)i * PF_SOUND_PERIOD), FALSE) > 0 ? 1 : 0;
-      sound_wavetable[2][i] = pf_wave((2 * PF_PI * 120 * (float)i * PF_SOUND_PERIOD), FALSE) > 0 ? 1 : 0;
-    }
-    sound_wavetables_compiled = TRUE;
-  }
-#endif
   if (device)
   {
     device->device = (f8_beeper_t*)pf_dma_alloc(sizeof(f8_beeper_t), TRUE);

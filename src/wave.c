@@ -1,4 +1,3 @@
-#include "types.h"
 #include "wave.h"
 
 float pf_factorial(u8 x)

@@ -10,7 +10,9 @@ typedef struct
   int total_cycles;
   u8 frequency_last;
   unsigned last_tick;
+#if PF_FLOATING_POINT
   float amplitude;
+#endif
   unsigned time;
   u8 frequencies[PF_SOUND_SAMPLES];
   short samples[PF_SOUND_SAMPLES * 2];
