@@ -44,7 +44,7 @@ f8_system_t system;
 f8_init(&system);
 
 /* Hook up all devices of a Channel F console */
-f8_system_init(&system, &f8_systems[F8_SYSTEM_CHANNEL_F]);
+f8_system_init(&system, F8_SYSTEM_CHANNEL_F);
 
 /* Add some program data to the 3851s that are now hooked up */
 f8_write(&system, 0x0000, /* pointer to program data */, 0x0400);
