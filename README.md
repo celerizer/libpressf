@@ -6,8 +6,9 @@ libpressf is an emulation library for Fairchild F8 family systems, used in the f
 - [Press F libretro](https://github.com/celerizer/Press-F-libretro), a Channel F emulator for the libretro API
 - [Press F Ultra](https://github.com/celerizer/Press-F-Ultra), a Channel F emulator for the Nintendo 64 video game console
 - [Press F Thumby](https://github.com/celerizer/Press-F-Thumby), a Channel F emulator for the RP2040-based Thumby microconsole
+- [Press F PSX](https://github.com/celerizer/Press-F-PSX), a Channel F emulator for the Sony PlayStation video game console
 
-libpressf is written to maintain maximum compatibility across different build targets by adhering to C89 standards and minimizing the use of standard libraries.
+libpressf is written to maintain maximum compatibility across different build targets by adhering to C89 standards, minimizing the use of standard libraries, and providing extensive configuration options.
 
 ## Building
 
@@ -60,3 +61,7 @@ f8_step(&system);
 /* ...or, process one 1/60sec frame */
 f8_run(&system);
 ```
+
+## License
+**libpressf** is distributed under the MIT license. See LICENSE for information.
+
