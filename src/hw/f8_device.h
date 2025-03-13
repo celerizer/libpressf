@@ -86,7 +86,6 @@ typedef struct f8_device_t
   f8_word pc1;
   f8_word dc0;
   f8_word dc1;
-#endif
 
 /*
   Example from a 2102 RAM chip
@@ -96,11 +95,13 @@ typedef struct f8_device_t
   length = 0x0400
   mask   = 0x03FF
 */
-  f8_byte *data;
   u16 start;
   u16 end;
   u16 length;
   u16 mask;
+#endif
+
+  f8_byte *data;
 
   f8_device_id_t type;
 

@@ -1,5 +1,6 @@
 #include <string.h>
 
+#include "../dma.h"
 #include "system.h"
 
 #include "selector_control.h"
@@ -18,8 +19,10 @@ static const system_preset_t f8_systems[] =
     F8_SYSTEM_CHANNEL_F,
     {
       /* Program ROM */
+#if PF_ROMC
       { F8_DEVICE_3851, 1, 0, 0x0000, NULL, NULL },
       { F8_DEVICE_3851, 2, 0, 0x0400, NULL, NULL },
+#endif
 
       /* VRAM */
       { F8_DEVICE_MK4027, 3, 0, 0, NULL, mk4027_write },
@@ -42,6 +45,7 @@ static const system_preset_t f8_systems[] =
       { F8_DEVICE_BEEPER, 7, 5, 0, NULL, beeper_out },
 
       /* Cartridge ROM */
+#if PF_ROMC
       { F8_DEVICE_3851, 8, 0, 0x800, NULL, NULL },
       { F8_DEVICE_3851, 9, 0, 0xC00, NULL, NULL },
       { F8_DEVICE_3851, 10, 0, 0x1000, NULL, NULL },
@@ -55,6 +59,7 @@ static const system_preset_t f8_systems[] =
       { F8_DEVICE_2114, 17, 0, 0x2A00, NULL, NULL },
       { F8_DEVICE_2114, 18, 0, 0x2C00, NULL, NULL },
       { F8_DEVICE_2114, 19, 0, 0x2E00, NULL, NULL },
+#endif
       { F8_DEVICE_SCHACH_LED, 20, 0, 0x3800, NULL, NULL },
 
       { F8_DEVICE_INVALID, 0, 0, 0, NULL, NULL }
@@ -120,6 +125,7 @@ u8 f8_device_init(f8_device_t *device, const f8_device_id_t type)
 
 u8 f8_device_set_start(f8_device_t *device, unsigned start)
 {
+#if PF_ROMC
   if (start + device->length < 0x10000)
   {
     device->start = start;
@@ -127,6 +133,7 @@ u8 f8_device_set_start(f8_device_t *device, unsigned start)
 
     return TRUE;
   }
+#endif
 
   return FALSE;
 }
@@ -135,11 +142,14 @@ u8 f8_system_init_preset(f8_system_t *system, const system_preset_t *preset)
 {
   unsigned i, j;
 
+  system->memory = pf_dma_alloc(0x10000, TRUE);
+
   /* Every F8 system has a central 3850 CPU */
+  system->f8devices[0].device = &system->main_cpu;
   f8_device_init(&system->f8devices[0], F8_DEVICE_3850);
   system->main_cpu = system->f8devices[0].device;
 
-  for (i = 0, j = 1; i < SYSTEM_HOOKUP_MAX; i++)
+  for (i = 0, j = 1; i < SYSTEM_HOOKUP_MAX, j < F8_MAX_DEVICES; i++)
   {
     const software_hookup_t *hookup = &preset->hookups[i];
     f8_device_t *device = &system->f8devices[hookup->id];
@@ -186,14 +196,10 @@ u8 f8_system_init_preset(f8_system_t *system, const system_preset_t *preset)
       }
 
       /* Setup ROMC-enabled devices */
+#if PF_ROMC
       device->start = hookup->start;
       device->end = hookup->start + device->length - 1;
-
-      /**
-       * If using simple ROMC mode, map to contiguous memory.
-       * @todo Constructor is still called, leading to double allocate.
-       */
-#if !PF_ROMC
+#else
       if (!(device->flags & F8_NO_ROMC))
         device->data = &system->memory[hookup->start];
 #endif
@@ -248,7 +254,7 @@ unsigned f8_read(f8_system_t *system, void *dest, unsigned address,
     }
   }
 #else
-  if (size && size + address <= sizeof(system->memory))
+  if (size && size + address <= 0x10000)
   {
     memcpy(dest, &system->memory[address], size);
     return size;
@@ -280,7 +286,7 @@ unsigned f8_write(f8_system_t *system, unsigned address, const void *src,
     }
   }
 #else
-  if (size && size + address <= sizeof(system->memory))
+  if (size && size + address <= 0x10000)
   {
     memcpy(&system->memory[address], src, size);
     return TRUE;

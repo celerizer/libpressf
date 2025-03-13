@@ -98,7 +98,7 @@ typedef struct f8_system_t
   f8_word pc1;
 
 #if !PF_ROMC
-  f8_byte memory[0x10000];
+  f8_byte *memory;
 #endif
 
   f8_byte dbus;
@@ -107,7 +107,7 @@ typedef struct f8_system_t
 
   f8_device_t f8devices[F8_MAX_DEVICES];
   unsigned f8device_count;
-  f3850_t *main_cpu;
+  f3850_t main_cpu;
 
   io_t io_ports[F8_MAX_IO_PORTS];
 
