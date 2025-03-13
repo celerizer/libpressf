@@ -6,17 +6,17 @@
 #include "hle.h"
 #include "romc.h"
 
-#define A    ((f3850_t*)system->f8devices[0].device)->accumulator
-#define ISAR ((f3850_t*)system->f8devices[0].device)->isar
-#define W    ((f3850_t*)system->f8devices[0].device)->status_register
+#define A    system->main_cpu.accumulator
+#define ISAR system->main_cpu.isar
+#define W    system->main_cpu.status_register
 
-#define J    ((f3850_t*)system->f8devices[0].device)->scratchpad[0x09]
-#define HU   ((f3850_t*)system->f8devices[0].device)->scratchpad[0x0A]
-#define HL   ((f3850_t*)system->f8devices[0].device)->scratchpad[0x0B]
-#define KU   ((f3850_t*)system->f8devices[0].device)->scratchpad[0x0C]
-#define KL   ((f3850_t*)system->f8devices[0].device)->scratchpad[0x0D]
-#define QU   ((f3850_t*)system->f8devices[0].device)->scratchpad[0x0E]
-#define QL   ((f3850_t*)system->f8devices[0].device)->scratchpad[0x0F]
+#define J    system->main_cpu.scratchpad[0x09]
+#define HU   system->main_cpu.scratchpad[0x0A]
+#define HL   system->main_cpu.scratchpad[0x0B]
+#define KU   system->main_cpu.scratchpad[0x0C]
+#define KL   system->main_cpu.scratchpad[0x0D]
+#define QU   system->main_cpu.scratchpad[0x0E]
+#define QL   system->main_cpu.scratchpad[0x0F]
 
 #if PF_ROMC
 #define DC0 system->f8devices[0].dc0
@@ -134,7 +134,7 @@ void add_bcd(f8_system_t *system, f8_byte *augend, unsigned addend)
  **/
 
 #define ISAR_OP(a) \
-  &f8_main_cpu(system)->scratchpad[a];
+  &system->main_cpu.scratchpad[a];
 
 #define ISAR_OP_0 ISAR_OP(0)
 #define ISAR_OP_1 ISAR_OP(1)
@@ -1443,8 +1443,8 @@ u8 pressf_run(f8_system_t *system)
     unsigned i;
 
     /* Step through a frame worth of cycles */
-    do pressf_step(system);
-    while (system->settings.f3850_clock_speed > system->cycles);
+    while (system->settings.f3850_clock_speed > system->cycles)
+      pressf_step(system);
     system->cycles -= system->settings.f3850_clock_speed;
 
     /* Run the "on finish frame" callback for all devices */
