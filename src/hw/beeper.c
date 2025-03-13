@@ -49,8 +49,14 @@ F8D_OP_OUT(beeper_out)
 
 void beeper_set_timing(f8_device_t *device, int current, int total)
 {
+#if PF_AUDIO_ENABLE
   ((f8_beeper_t*)device->device)->current_cycles = current;
   ((f8_beeper_t*)device->device)->total_cycles = total;
+#else
+  F8_UNUSED(device);
+  F8_UNUSED(current);
+  F8_UNUSED(total);
+#endif
 }
 
 void beeper_finish_frame(f8_device_t *device)
@@ -103,6 +109,7 @@ void beeper_finish_frame(f8_device_t *device)
 
 void beeper_init(f8_device_t *device)
 {
+#if PF_AUDIO_ENABLE
 #if PF_FLOATING_POINT
   if (!sound_wavetables_initted)
   {
@@ -119,4 +126,5 @@ void beeper_init(f8_device_t *device)
     device->set_timing = beeper_set_timing;
     device->finish_frame = beeper_finish_frame;
   }
+#endif
 }
