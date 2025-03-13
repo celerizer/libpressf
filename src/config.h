@@ -33,6 +33,12 @@
 #define PF_DEBUGGER FALSE
 #endif
 
+#define PF_DYNAREC_INVALID 0
+#define PF_DYNAREC_MIPS32 1
+#ifndef PF_DYNAREC_TARGET
+#define PF_DYNAREC_TARGET PF_DYNAREC_MIPS32
+#endif
+
 /**
  * Defines whether or not to use static asserts at compile time.
  * Only necessary for developers.
