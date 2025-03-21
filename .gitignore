@@ -3,3 +3,4 @@
 *.dep
 wavetables-bin
 src/wavetables/sin.h
+src/asm/offsets.h
