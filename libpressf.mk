@@ -1,8 +1,10 @@
 PRESS_F_ROOT_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
 PRESS_F_SOURCES := \
+  $(PRESS_F_ROOT_DIR)/src/asm/mips1.S \
   $(PRESS_F_ROOT_DIR)/src/debug.c \
   $(PRESS_F_ROOT_DIR)/src/dma.c \
+  $(PRESS_F_ROOT_DIR)/src/dynarec.c \
   $(PRESS_F_ROOT_DIR)/src/emu.c \
   $(PRESS_F_ROOT_DIR)/src/font.c \
   $(PRESS_F_ROOT_DIR)/src/hle.c \
