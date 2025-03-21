@@ -38,7 +38,7 @@ f8_dynarec_block_t f8_dynarec_init(f8_system_t *system)
   f8_dynarec_op_t *test;
   unsigned test_words = 0;
 
-  block.function = pf_dma_alloc(32 * 4, TRUE);
+  block.function = pf_dma_alloc(32 * 4, TRUE, 4);
 
   memcpy(block.function + test_words, f8_asm_op12, f8_asm_op_sizes[0x12]);
   test_words += f8_asm_op_sizes[0x12];

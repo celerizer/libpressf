@@ -52,7 +52,7 @@ void vram_init(f8_device_t *device)
 {
   if (device)
   {
-    device->device = (vram_t*)pf_dma_alloc(sizeof(vram_t), FALSE);
+    device->device = (vram_t*)pf_dma_alloc(sizeof(vram_t), FALSE, 0);
     device->name = name;
     device->type = type;
     device->flags = F8_NO_ROMC;

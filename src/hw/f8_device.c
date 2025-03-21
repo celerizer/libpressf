@@ -30,7 +30,7 @@ void f8_generic_init(f8_device_t *device, unsigned size)
   if (device)
   {
     /* Only allocate if not using fixed memory map */
-    device->data = pf_dma_alloc(size, FALSE);
+    device->data = pf_dma_alloc(size, FALSE, 0);
     device->length = size;
   }
 #else

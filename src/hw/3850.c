@@ -10,7 +10,7 @@ void f3850_init(f8_device_t *device)
   if (device)
   {
     if (!device->device)
-      device->device = (f3850_t*)pf_dma_alloc(sizeof(f3850_t), TRUE);
+      device->device = (f3850_t*)pf_dma_alloc(sizeof(f3850_t), TRUE, 0);
     device->name = name;
     device->type = type;
 

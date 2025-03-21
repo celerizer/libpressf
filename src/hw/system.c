@@ -142,7 +142,7 @@ u8 f8_system_init_preset(f8_system_t *system, const system_preset_t *preset)
 {
   unsigned i, j;
 
-  system->memory = pf_dma_alloc(0x10000, TRUE);
+  system->memory = pf_dma_alloc(0x10000, TRUE, 4);
 
   /* Every F8 system has a central 3850 CPU */
   system->f8devices[0].device = &system->main_cpu;

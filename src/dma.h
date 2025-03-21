@@ -3,7 +3,7 @@
 
 #include "config.h"
 
-void *pf_dma_alloc(unsigned size, unsigned zero);
+void *pf_dma_alloc(unsigned size, unsigned zero, unsigned align);
 
 void pf_dma_free(void *value);
 

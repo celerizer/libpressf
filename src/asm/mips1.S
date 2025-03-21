@@ -89,7 +89,7 @@
 
 #define STATUS_XXXX(regd, regs, name)
 
-#define ISAR_DIR(##i) lbu $t0, r##i; nop 
+#define ISAR_DIR(i) lbu $t0, r##i; nop 
 #define ISAR_NOC add $t0, ISAR, $s7; lbu $t0, 0($t0); nop
 #define ISAR_INC .set noat; add $t0, ISAR, $s7; lbu $t0, 0($t0); addi $at, ISAR, 1; andi $at, $at, B00000111; andi ISAR, ISAR, B00111000; or ISAR, ISAR, $at
 #define ISAR_DEC .set noat; add $t0, ISAR, $s7; lbu $t0, 0($t0); subi $at, ISAR, 1; andi $at, $at, B00000111; andi ISAR, ISAR, B00111000; or ISAR, ISAR, $at

@@ -89,7 +89,7 @@ void f2102_init(f8_device_t *device)
      return;
    else
    {
-     f2102_t *m_f2102 = (f2102_t*)pf_dma_alloc(sizeof(f2102_t), TRUE);
+     f2102_t *m_f2102 = (f2102_t*)pf_dma_alloc(sizeof(f2102_t), TRUE, 0);
      device->device = m_f2102;
      device->data = m_f2102->data;
      device->name = name;
