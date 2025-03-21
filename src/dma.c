@@ -9,7 +9,7 @@ static void (*pf_dma_oom_cb)(void) = NULL;
 #include <stdlib.h>
 #endif
 
-void *pf_dma_alloc(unsigned size, unsigned zero)
+void *pf_dma_alloc(unsigned size, unsigned zero, unsigned align)
 {
 /**
  * Implements very simple DMA for embedded systems that have no access to
@@ -17,6 +17,9 @@ void *pf_dma_alloc(unsigned size, unsigned zero)
  * actually free values. Use only if absolutely necessary.
  */
 #if PF_NO_DMA
+  if (align > 1)
+    pf_heap_alloc += align - (pf_heap_alloc % align);
+
   if (size + pf_heap_alloc >= PF_NO_DMA_SIZE)
   {
     if (pf_dma_oom_cb)
@@ -40,6 +43,7 @@ void *pf_dma_alloc(unsigned size, unsigned zero)
     return allocated_value;
   }
 #else
+  F8_UNUSED(align);
   return zero ? calloc(size, 1) : malloc(size);
 #endif
 }
