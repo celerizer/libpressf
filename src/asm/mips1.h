@@ -10,7 +10,7 @@
 #define W $s4
 #define DC0 $s5
 #define DC1 $s6
-#define SCRATCHPAD $s7
+#define SCRATCH $s7
 
 #define A_mem F8_OFFSET_A($a0)
 #define W_mem F8_OFFSET_W($a0)
@@ -33,6 +33,7 @@
 #define QU F8_OFFSET_QU($a0)
 #define QL F8_OFFSET_QL($a0)
 
-#define MAGIC 0x4B42
+#define MAGIC_8 0xCF
+#define MAGIC_16 0x4B42
 
 #endif

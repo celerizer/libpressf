@@ -11,7 +11,7 @@ typedef struct f8_dynarec_block_t
   /* The value of the program counter after this block ends */
   u16 end;
 
-  /* The number of cycles this block processes in in the F8 system */
+  /* The number of cycles this block processes in the F8 system */
   unsigned cycles;
 
   /* The recompiled block of instructions */

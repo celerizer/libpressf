@@ -90,9 +90,9 @@
 #define STATUS_XXXX(regd, regs, name)
 
 #define ISAR_DIR(i) lbu $t0, r##i; nop 
-#define ISAR_NOC add $t0, ISAR, $s7; lbu $t0, 0($t0); nop
-#define ISAR_INC .set noat; add $t0, ISAR, $s7; lbu $t0, 0($t0); addi $at, ISAR, 1; andi $at, $at, B00000111; andi ISAR, ISAR, B00111000; or ISAR, ISAR, $at
-#define ISAR_DEC .set noat; add $t0, ISAR, $s7; lbu $t0, 0($t0); subi $at, ISAR, 1; andi $at, $at, B00000111; andi ISAR, ISAR, B00111000; or ISAR, ISAR, $at
+#define ISAR_NOC add $t0, ISAR, SCRATCH; lbu $t0, 0($t0); nop
+#define ISAR_INC .set noat; add $t0, ISAR, SCRATCH; lbu $t0, 0($t0); addi $at, ISAR, 1; andi $at, $at, B00000111; andi ISAR, ISAR, B00111000; or ISAR, ISAR, $at
+#define ISAR_DEC .set noat; add $t0, ISAR, SCRATCH; lbu $t0, 0($t0); addi $at, ISAR, -1; andi $at, $at, B00000111; andi ISAR, ISAR, B00111000; or ISAR, ISAR, $at
 
 # LR A, KU
 f8_asm_op00:
@@ -194,13 +194,13 @@ f8_asm_op15:
 
 # LM
 f8_asm_op16:
-  add $t0, $a0, DC0
+  add $t0, SCRATCH, DC0
   lbu A, 0($t0)
   addi DC0, DC0, 1
 
 # ST
 f8_asm_op17:
-  add $t0, $a0, DC0
+  add $t0, SCRATCH, DC0
   sb A, 0($t0)
   addi DC0, DC0, 1
 
@@ -224,6 +224,63 @@ f8_asm_op1b:
 f8_asm_op1c:
   andi PC0, PC1, 0xFFFF
 
+# LR W, J
+f8_asm_op1d:
+  lbu W, r9
+  nop
+  andi W, W, B00011111
+
+# LR J, W
+f8_asm_op1e:
+  sb W, r9
+
+# INC @todo
+f8_asm_op1f:
+
+# LI
+# The dynarec will replace this magic with the correct value at runtime.
+f8_asm_op20:
+  ori A, $zero, MAGIC_8 
+
+# NI
+# The dynarec will replace this magic with the correct value at runtime.
+f8_asm_op21:
+  andi A, A, MAGIC_8 
+  STATUS_0X0X(A, ni)
+
+# OI
+# The dynarec will replace this magic with the correct value at runtime.
+f8_asm_op22:
+  ori A, A, MAGIC_8
+  STATUS_0X0X(A, oi)
+
+# XI
+# The dynarec will replace this magic with the correct value at runtime.
+f8_asm_op23:
+  xori A, A, MAGIC_8
+  STATUS_0X0X(A, xi)
+
+# AI
+# The dynarec will replace this magic with the correct value at runtime.
+f8_asm_op24:
+  # @todo after implement add
+
+# CI
+# The dynarec will replace this magic with the correct value at runtime.
+f8_asm_op25:
+  # @todo after implement add
+
+# IN
+# There will be a context switch here and the host will handle it.
+f8_asm_op26:
+  # @todo
+
+# OUT
+# There will be a context switch here and the host will handle it.
+f8_asm_op27:
+  ori $v0, $zero, A
+  # @todo
+
 # PI
 f8_asm_op28:
   nop # There will be a context switch here and the host will handle it.
@@ -233,9 +290,9 @@ f8_asm_op29:
   nop # There will be a context switch here and the host will handle it.
 
 # DCI
+# The dynarec will replace this magic with the correct value at runtime.
 f8_asm_op2a:
-  ori DC0, $zero, MAGIC # The dynarec will replace this magic with the
-                        # correct value at runtime.
+  ori DC0, $zero, MAGIC_16
 
 # NOP 
 f8_asm_op2b: # The dynarec should optimize this away. Included for completeness.
@@ -245,6 +302,16 @@ f8_asm_op2c:
   xor DC0, DC1
   xor DC1, DC0
   xor DC0, DC1
+
+# Invalid opcodes. Included for completeness.
+f8_asm_op2d:
+f8_asm_op2e:
+f8_asm_op2f:
+
+# DS
+# @todo
+f8_asm_op30:
+f8_asm_op3f:
 
 # LR A, r0
 f8_asm_op40:
@@ -342,13 +409,35 @@ f8_asm_op7f:
 # @todo!!
 f8_asm_op8c: 
 
-# XS 0
-f8_asm_ope0:
-  lbu $t0, r0
-  nop
+# XS
+#define ASM_XS(i) f8_asm_ope##i: lbu $t0, r##i; nop; xor A, A, $t0; STATUS_0X0X(A, xs##i)
+ASM_XS(0)
+ASM_XS(1)
+ASM_XS(2)
+ASM_XS(3)
+ASM_XS(4)
+ASM_XS(5)
+ASM_XS(6)
+ASM_XS(7)
+ASM_XS(8)
+ASM_XS(9)
+ASM_XS(a)
+ASM_XS(b)
+f8_asm_opec:
+  ISAR_NOC
   xor A, A, $t0
-  STATUS_0X0X(A, xs0)
+  STATUS_0X0X(A, xsc)
+f8_asm_oped:
+  ISAR_INC
+  xor A, A, $t0
+  STATUS_0X0X(A, xsd)
+f8_asm_opee:
+  ISAR_DEC
+  xor A, A, $t0
+  STATUS_0X0X(A, xse)
+f8_asm_opef:
 
+# NS
 #define ASM_NS(i) f8_asm_opf##i: lbu $t0, r##i; nop; and A, A, $t0; STATUS_0X0X(A, ns##i)
 ASM_NS(0)
 ASM_NS(1)
@@ -365,15 +454,15 @@ ASM_NS(b)
 f8_asm_opfc:
   ISAR_NOC
   and A, A, $t0
-  STATUS_0X0X(A, xsc)
+  STATUS_0X0X(A, nsc)
 f8_asm_opfd:
   ISAR_INC
   and A, A, $t0
-  STATUS_0X0X(A, xsd)
+  STATUS_0X0X(A, nsd)
 f8_asm_opfe:
   ISAR_DEC
   and A, A, $t0
-  STATUS_0X0X(A, xse)
+  STATUS_0X0X(A, nse)
 f8_asm_opff:
 
 .section .data
