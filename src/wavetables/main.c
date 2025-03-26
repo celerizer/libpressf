@@ -6,7 +6,8 @@ static u8 sound_wavetable[3][PF_SOUND_SAMPLES];
 
 int main()
 {
-  int i;
+  int i, j;
+
   FILE *file = fopen("src/wavetables/sin.h", "w");
   if (!file)
   {
@@ -25,7 +26,7 @@ int main()
 
   pf_generate_wavetables(sound_wavetable);
 
-  for (int j = 0; j < 3; j++)
+  for (j = 0; j < 3; j++)
   {
     fprintf(file, "  { ");
     for (i = 0; i < PF_SOUND_SAMPLES; i++)

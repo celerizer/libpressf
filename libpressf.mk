@@ -21,7 +21,8 @@ PRESS_F_SOURCES := \
   $(PRESS_F_ROOT_DIR)/src/input.c \
   $(PRESS_F_ROOT_DIR)/src/romc.c \
   $(PRESS_F_ROOT_DIR)/src/screen.c \
-  $(PRESS_F_ROOT_DIR)/src/software.c
+  $(PRESS_F_ROOT_DIR)/src/software.c \
+  $(PRESS_F_ROOT_DIR)/src/wave.c
 
 PRESS_F_HEADERS := \
   $(PRESS_F_ROOT_DIR)/src/config.h \
@@ -47,7 +48,8 @@ PRESS_F_HEADERS := \
   $(PRESS_F_ROOT_DIR)/src/romc.h \
   $(PRESS_F_ROOT_DIR)/src/screen.h \
   $(PRESS_F_ROOT_DIR)/src/software.h \
-  $(PRESS_F_ROOT_DIR)/src/types.h
+  $(PRESS_F_ROOT_DIR)/src/types.h \
+  $(PRESS_F_ROOT_DIR)/src/wave.h
 
 PRESS_F_WAVETABLES_CC = gcc
 PRESS_F_WAVETABLES_CFLAGS = -Wall -Wextra -O2

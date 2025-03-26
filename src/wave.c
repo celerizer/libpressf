@@ -1,5 +1,7 @@
 #include "wave.h"
 
+#if PF_FLOATING_POINT
+
 float pf_factorial(u8 x)
 {
   float result = x;
@@ -49,3 +51,5 @@ void pf_generate_wavetables(u8 table[3][PF_SOUND_SAMPLES])
       table[j][i] = pf_wave((2 * PF_PI * (j == 0 ? 1000 : j == 1 ? 500 : 120) * (float)i * PF_SOUND_PERIOD), FALSE) > 0 ? 1 : 0;
   }
 }
+
+#endif

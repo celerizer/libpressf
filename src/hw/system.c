@@ -224,6 +224,7 @@ f8_byte f8_fetch(f8_system_t *system, unsigned address)
 {
   f8_byte value;
 
+  value.u = 0;
   f8_read(system, &value, address, 1);
 
   return value;
