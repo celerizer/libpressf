@@ -479,7 +479,7 @@ ASM_BT(7)
 f8_asm_op88:
   add $t2, $a0, DC0
   lbu $t2, F8_OFFSET_VMEM($t2)
-  nop
+  add DC0, DC0, 1
   STATUS_ADD(A, $t2, am)
 
 # AMD @todo
@@ -512,6 +512,19 @@ f8_asm_op8c:
   add DC0, DC0, 1
   xor A, A, $t0
   STATUS_0X0X(A, xm)
+
+# CM
+f8_asm_op8d:
+  add $t2, $a0, DC0
+  lbu $t2, F8_OFFSET_VMEM($t2)
+  add DC0, DC0, 1
+  STATUS_ADD($t2, A, cm)
+
+# ADC
+f8_asm_op8e:
+  sll $t0, A, 24
+  sra $t0, $t0, 24 # Sign extend the accumulator and add it to DC0
+  add DC0, DC0, $t0
 
 # BR 7
 f8_asm_op8f:
