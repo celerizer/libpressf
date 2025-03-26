@@ -57,7 +57,7 @@ typedef struct
   void (*function)(void);
 } f8_dynarec_op_t;
 
-f8_dynarec_block_t f8_dynarec_init(f8_system_t *system);
+f8_dynarec_block_t f8_dynarec_init(f8_system_t *system, unsigned size, unsigned offset);
 
 unsigned f8_dynarec_run(unsigned cycles);
 

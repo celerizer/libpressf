@@ -73,6 +73,11 @@ int main()
   fprintf(file, "#define F8_OFFSET_KL %lu\n", offsetof(f8_system_t, main_cpu.scratchpad[13]));
   fprintf(file, "#define F8_OFFSET_QU %lu\n", offsetof(f8_system_t, main_cpu.scratchpad[14]));
   fprintf(file, "#define F8_OFFSET_QL %lu\n", offsetof(f8_system_t, main_cpu.scratchpad[15]));
+#if !PF_ROMC
+  fprintf(file, "#define F8_OFFSET_VMEM %lu\n", offsetof(f8_system_t, memory));
+#else
+  fprintf(file, "#define F8_OFFSET_VMEM 0\n");
+#endif
 
   fprintf(file, "\n#endif\n");
   fclose(file);

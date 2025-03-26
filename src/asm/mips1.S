@@ -89,10 +89,35 @@
 
 #define STATUS_XXXX(regd, regs, name)
 
-#define ISAR_DIR(i) lbu $t0, r##i; nop 
-#define ISAR_NOC add $t0, ISAR, SCRATCH; lbu $t0, 0($t0); nop
-#define ISAR_INC .set noat; add $t0, ISAR, SCRATCH; lbu $t0, 0($t0); addi $at, ISAR, 1; andi $at, $at, B00000111; andi ISAR, ISAR, B00111000; or ISAR, ISAR, $at
-#define ISAR_DEC .set noat; add $t0, ISAR, SCRATCH; lbu $t0, 0($t0); addi $at, ISAR, -1; andi $at, $at, B00000111; andi ISAR, ISAR, B00111000; or ISAR, ISAR, $at
+/**
+ * Add two registers and update the emulated status register based on result.
+ * Clobbers $t0 for temporary result and $t1 for temporary overflow check.
+ * @todo I'm sure this can be sped up a little
+ */
+#define STATUS_ADD(regd, regs, name) \
+  add $t0, regd, regs; \
+  srl $at, $t0, 7; \
+  xori $at, $at, 1; \
+  andi $t1, $t0, 0xFF; \
+  bgtz $t1, z_##name; \
+  ori $at, B00000100; \
+  z_##name: \
+  or W, $zero, $at; \
+  srl $at, $t0, 8; \
+  sll $at, $at, 1; \
+  or W, W, $at; \
+  xor $at, regs, $t0; \
+  xor $t1, regd, $t0; \
+  and $at, $at, $t1; \
+  andi $at, $at, B10000000; \
+  srl $at, $at, 4; \
+  or W, W, $at; \
+  andi regd, $t0, 0xFF;
+
+#define ISAR_DIR(i, r) lbu i, r; nop 
+#define ISAR_NOC(i) add i, ISAR, SCRATCH; lbu i, 0(i); nop
+#define ISAR_INC(i) .set noat; add i, ISAR, SCRATCH; lbu i, 0(i); addi $at, ISAR, 1; andi $at, $at, B00000111; andi ISAR, ISAR, B00111000; or ISAR, ISAR, $at
+#define ISAR_DEC(i) .set noat; add i, ISAR, SCRATCH; lbu i, 0(i); addi $at, ISAR, -1; andi $at, $at, B00000111; andi ISAR, ISAR, B00111000; or ISAR, ISAR, $at
 
 # LR A, KU
 f8_asm_op00:
@@ -234,8 +259,10 @@ f8_asm_op1d:
 f8_asm_op1e:
   sb W, r9
 
-# INC @todo
+# INC
 f8_asm_op1f:
+  ori $t2, $zero, 1
+  STATUS_ADD(A, $t2, inc)
 
 # LI
 # The dynarec will replace this magic with the correct value at runtime.
@@ -263,12 +290,14 @@ f8_asm_op23:
 # AI
 # The dynarec will replace this magic with the correct value at runtime.
 f8_asm_op24:
-  # @todo after implement add
+  ori $t2, $zero, MAGIC_8
+  STATUS_ADD(A, $t2, ai)
 
 # CI
 # The dynarec will replace this magic with the correct value at runtime.
 f8_asm_op25:
-  # @todo after implement add
+  ori $t2, $zero, MAGIC_8
+  STATUS_ADD($t2, A, ci) 
 
 # IN
 # There will be a context switch here and the host will handle it.
@@ -278,7 +307,7 @@ f8_asm_op26:
 # OUT
 # There will be a context switch here and the host will handle it.
 f8_asm_op27:
-  ori $v0, $zero, A
+  andi $v0, A, 0xFF
   # @todo
 
 # PI
@@ -286,8 +315,10 @@ f8_asm_op28:
   nop # There will be a context switch here and the host will handle it.
 
 # JMP
+# The dynarec will replace this magic with the correct value at runtime.
 f8_asm_op29:
-  nop # There will be a context switch here and the host will handle it.
+  j MAGIC_16
+  nop
 
 # DCI
 # The dynarec will replace this magic with the correct value at runtime.
@@ -309,8 +340,34 @@ f8_asm_op2e:
 f8_asm_op2f:
 
 # DS
-# @todo
-f8_asm_op30:
+#define ASM_DS(i) f8_asm_op3##i: ISAR_DIR($t2, r##i); ori $t3, $zero, 0xff; STATUS_ADD($t2, $t3, ds##i); sb $t2, r##i
+ASM_DS(0)
+ASM_DS(1)
+ASM_DS(2)
+ASM_DS(3)
+ASM_DS(4)
+ASM_DS(5)
+ASM_DS(6)
+ASM_DS(7)
+ASM_DS(8)
+ASM_DS(9)
+ASM_DS(a)
+ASM_DS(b)
+f8_asm_op3c:
+  ISAR_NOC($t2)
+  ori $t3, $zero, 0xff
+  STATUS_ADD($t2, $t3, dsc)
+  # sb
+f8_asm_op3d:
+  ISAR_INC($t2)
+  ori $t3, $zero, 0xff
+  STATUS_ADD($t2, $t3, dsd)
+  # sb
+f8_asm_op3e:
+  ISAR_DEC($t2)
+  ori $t3, $zero, 0xff
+  STATUS_ADD($t2, $t3, dse)
+  # sb
 f8_asm_op3f:
 
 # LR A, r0
@@ -405,9 +462,111 @@ f8_asm_op7e:
 f8_asm_op7f:
   ori A, $zero, 15
 
+dummy:
+
+# BT
+#define ASM_BT(i) f8_asm_op8##i: andi $t0, W, i; bgtz $t0, dummy; nop
+ASM_BT(0)
+ASM_BT(1)
+ASM_BT(2)
+ASM_BT(3)
+ASM_BT(4)
+ASM_BT(5)
+ASM_BT(6)
+ASM_BT(7)
+
+# AM
+f8_asm_op88:
+  add $t2, $a0, DC0
+  lbu $t2, F8_OFFSET_VMEM($t2)
+  nop
+  STATUS_ADD(A, $t2, am)
+
+# AMD @todo
+f8_asm_op89:
+  add $t2, $a0, DC0
+  lbu $t2, F8_OFFSET_VMEM($t2)
+  add DC0, DC0, 1
+  STATUS_ADD(A, $t2, amd)
+
+# NM
+f8_asm_op8a:
+  addu $t0, $a0, DC0
+  lbu $t0, F8_OFFSET_VMEM($t0)
+  add DC0, DC0, 1
+  and A, A, $t0
+  STATUS_0X0X(A, nm)
+
+# OM
+f8_asm_op8b:
+  addu $t0, $a0, DC0
+  lbu $t0, F8_OFFSET_VMEM($t0)
+  add DC0, DC0, 1
+  or A, A, $t0
+  STATUS_0X0X(A, om)
+
 # XM
-# @todo!!
-f8_asm_op8c: 
+f8_asm_op8c:
+  addu $t0, $a0, DC0
+  lbu $t0, F8_OFFSET_VMEM($t0)
+  add DC0, DC0, 1
+  xor A, A, $t0
+  STATUS_0X0X(A, xm)
+
+# BR 7
+f8_asm_op8f:
+  andi $t0, ISAR, 7
+  xori $t0, $t0, 7
+  beqz $t0, dummy
+  nop
+
+# BF
+# define ASM_BF(i) f8_asm_op9##i: andi $t0, W, 0x##i; beqz $t0, dummy; nop
+ASM_BF(0)
+ASM_BF(1)
+ASM_BF(2)
+ASM_BF(3)
+ASM_BF(4)
+ASM_BF(5)
+ASM_BF(6)
+ASM_BF(7)
+ASM_BF(8)
+ASM_BF(9)
+ASM_BF(a)
+ASM_BF(b)
+ASM_BF(c)
+ASM_BF(d)
+ASM_BF(e)
+ASM_BF(f)
+
+# INS
+
+# OUTS
+
+# AS
+#define ASM_AS(i) f8_asm_opc##i: lbu $t2, r##i; nop; STATUS_ADD(A, $t2, as##i)
+ASM_AS(0)
+ASM_AS(1)
+ASM_AS(2)
+ASM_AS(3)
+ASM_AS(4)
+ASM_AS(5)
+ASM_AS(6)
+ASM_AS(7)
+ASM_AS(8)
+ASM_AS(9)
+ASM_AS(a)
+ASM_AS(b)
+f8_asm_opcc:
+  ISAR_NOC($t2)
+  STATUS_ADD(A, $t2, asc)
+f8_asm_opcd:
+  ISAR_INC($t2)
+  STATUS_ADD(A, $t2, asd)
+f8_asm_opce:
+  ISAR_DEC($t2)
+  STATUS_ADD(A, $t2, ase)
+f8_asm_opcf:
 
 # XS
 #define ASM_XS(i) f8_asm_ope##i: lbu $t0, r##i; nop; xor A, A, $t0; STATUS_0X0X(A, xs##i)
@@ -424,15 +583,15 @@ ASM_XS(9)
 ASM_XS(a)
 ASM_XS(b)
 f8_asm_opec:
-  ISAR_NOC
+  ISAR_NOC($t0)
   xor A, A, $t0
   STATUS_0X0X(A, xsc)
 f8_asm_oped:
-  ISAR_INC
+  ISAR_INC($t0)
   xor A, A, $t0
   STATUS_0X0X(A, xsd)
 f8_asm_opee:
-  ISAR_DEC
+  ISAR_DEC($t0)
   xor A, A, $t0
   STATUS_0X0X(A, xse)
 f8_asm_opef:
@@ -452,15 +611,15 @@ ASM_NS(9)
 ASM_NS(a)
 ASM_NS(b)
 f8_asm_opfc:
-  ISAR_NOC
+  ISAR_NOC($t0)
   and A, A, $t0
   STATUS_0X0X(A, nsc)
 f8_asm_opfd:
-  ISAR_INC
+  ISAR_INC($t0)
   and A, A, $t0
   STATUS_0X0X(A, nsd)
 f8_asm_opfe:
-  ISAR_DEC
+  ISAR_DEC($t0)
   and A, A, $t0
   STATUS_0X0X(A, nse)
 f8_asm_opff:
@@ -492,3 +651,42 @@ f8_asm_op_sizes:
   .word 0
   .word 0
   .word f8_asm_op19 - f8_asm_op18
+  .word f8_asm_op1a - f8_asm_op19
+  .word f8_asm_op1b - f8_asm_op1a
+  .word f8_asm_op1c - f8_asm_op1b
+  .word f8_asm_op1d - f8_asm_op1c
+  .word f8_asm_op1e - f8_asm_op1d
+  .word f8_asm_op1f - f8_asm_op1e
+  .word f8_asm_op20 - f8_asm_op1f
+  .word f8_asm_op21 - f8_asm_op20
+  .word f8_asm_op22 - f8_asm_op21
+  .word f8_asm_op23 - f8_asm_op22
+  .word f8_asm_op24 - f8_asm_op23
+  .word f8_asm_op25 - f8_asm_op24
+  .word f8_asm_op26 - f8_asm_op25
+  .word f8_asm_op27 - f8_asm_op26
+  .word f8_asm_op28 - f8_asm_op27
+  .word f8_asm_op29 - f8_asm_op28
+  .word f8_asm_op2a - f8_asm_op29
+  .word f8_asm_op2b - f8_asm_op2a
+  .word f8_asm_op2c - f8_asm_op2b
+  .word f8_asm_op2d - f8_asm_op2c
+  .word f8_asm_op2e - f8_asm_op2d
+  .word f8_asm_op2f - f8_asm_op2e
+
+  .word f8_asm_op30 - f8_asm_op2f
+  .word f8_asm_op31 - f8_asm_op30
+  .word f8_asm_op32 - f8_asm_op31
+  .word f8_asm_op33 - f8_asm_op32
+  .word f8_asm_op34 - f8_asm_op33
+  .word f8_asm_op35 - f8_asm_op34
+  .word f8_asm_op36 - f8_asm_op35
+  .word f8_asm_op37 - f8_asm_op36
+  .word f8_asm_op38 - f8_asm_op37
+  .word f8_asm_op39 - f8_asm_op38
+  .word f8_asm_op3a - f8_asm_op39
+  .word f8_asm_op3b - f8_asm_op3a
+  .word f8_asm_op3c - f8_asm_op3b
+  .word f8_asm_op3d - f8_asm_op3c
+  .word f8_asm_op3e - f8_asm_op3d
+  .word f8_asm_op3f - f8_asm_op3e

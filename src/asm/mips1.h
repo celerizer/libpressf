@@ -33,7 +33,7 @@
 #define QU F8_OFFSET_QU($a0)
 #define QL F8_OFFSET_QL($a0)
 
-#define MAGIC_8 0xCF
-#define MAGIC_16 0x4B42
+#define MAGIC_8 0xF8
+#define MAGIC_16 0xF8F8
 
 #endif
