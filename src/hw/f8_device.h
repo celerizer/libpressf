@@ -74,6 +74,37 @@ typedef enum
 */
 #define F8_HAS_BATTERY (1 << 6)
 
+/* Arbitrary number of maximum mappings that can be applied to a device */
+#define F8_MAPPING_MAX 2
+
+typedef void F8D_MMAP_IN_T(struct f8_device_t*, u16);
+
+typedef void F8D_MMAP_OUT_T(struct f8_device_t*, u16, f8_byte);
+
+typedef struct
+{
+  /* Pointer to the mapped data */
+  f8_byte *data;
+
+  /* Beginning address of mapped memory */
+  u16 start;
+
+  /* End address of mapped memory */
+  u16 end;
+
+  /* Length of mapped memory */
+  u16 length;
+
+  /* Mask that can be applied to address for wrapping around */
+  u16 mask;
+
+  /* A function to be called when a byte is read from this region */
+  F8D_MMAP_IN_T *func_in;
+
+  /* A function to be called when a byte is written to this region */
+  F8D_MMAP_OUT_T *func_out;
+} f8_device_mapping_t;
+
 typedef struct f8_device_t
 {
   const char *name;
@@ -88,19 +119,7 @@ typedef struct f8_device_t
   f8_word dc1;
 #endif
 
-/*
-  Example from a 2102 RAM chip
-
-  start  = 0x2000
-  end    = 0x23FF
-  length = 0x0400
-  mask   = 0x03FF
-*/
-  f8_byte *data;
-  u16 start;
-  u16 end;
-  u16 length;
-  u16 mask;
+  f8_device_mapping_t mappings[F8_MAPPING_MAX];
 
   f8_device_id_t type;
 

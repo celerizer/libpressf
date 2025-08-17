@@ -30,7 +30,7 @@ typedef struct software_hookup_t
 
   /* The virtual memory address this device's data begins at. Only used for
    * ROMC devices. */
-  u16 start;
+  int starts[F8_MAPPING_MAX];
 
   /* A pointer to the function called when the 3850 performs an IN or INS
    * instruction. If NULL, a default implementation will be used where data is

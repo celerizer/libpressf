@@ -18,50 +18,51 @@ static const system_preset_t f8_systems[] =
     F8_SYSTEM_CHANNEL_F,
     {
       /* Program ROM */
-      { F8_DEVICE_3851, 1, 0, 0x0000, NULL, NULL },
-      { F8_DEVICE_3851, 2, 0, 0x0400, NULL, NULL },
+      { F8_DEVICE_3851, 1, 0, { 0x0000, -1 }, NULL, NULL },
+      { F8_DEVICE_3851, 2, 0, { 0x0400, -1 }, NULL, NULL },
 
       /* VRAM */
-      { F8_DEVICE_MK4027, 3, 0, 0, NULL, mk4027_write },
-      { F8_DEVICE_MK4027, 3, 1, 0, NULL, mk4027_color },
-      { F8_DEVICE_MK4027, 3, 4, 0, NULL, mk4027_set_x },
-      { F8_DEVICE_MK4027, 3, 5, 0, NULL, mk4027_set_y },
+      { F8_DEVICE_MK4027, 3, 0, { -1 }, NULL, mk4027_write },
+      { F8_DEVICE_MK4027, 3, 1, { -1 }, NULL, mk4027_color },
+      { F8_DEVICE_MK4027, 3, 4, { -1 }, NULL, mk4027_set_x },
+      { F8_DEVICE_MK4027, 3, 5, { -1 }, NULL, mk4027_set_y },
 
       /* Selector Control buttons (5 buttons on the game console) */
-      { F8_DEVICE_SELECTOR_CONTROL, 4, 0, 0, selector_control_input, NULL },
+      { F8_DEVICE_SELECTOR_CONTROL, 4, 0, { -1 }, selector_control_input, NULL },
 
       /* Left Hand-Controller */
-      { F8_DEVICE_HAND_CONTROLLER, 5, 4, 0, hand_controller_input_4, NULL },
-      { F8_DEVICE_HAND_CONTROLLER, 5, 0, 0, NULL, hand_controller_output },
+      { F8_DEVICE_HAND_CONTROLLER, 5, 4, { -1 }, hand_controller_input_4, NULL },
+      { F8_DEVICE_HAND_CONTROLLER, 5, 0, { -1 }, NULL, hand_controller_output },
 
       /* Right Hand-Controller */
-      { F8_DEVICE_HAND_CONTROLLER, 6, 1, 0, hand_controller_input_1, NULL },
-      { F8_DEVICE_HAND_CONTROLLER, 6, 0, 0, NULL, hand_controller_output },
+      { F8_DEVICE_HAND_CONTROLLER, 6, 1, { -1 }, hand_controller_input_1, NULL },
+      { F8_DEVICE_HAND_CONTROLLER, 6, 0, { -1 }, NULL, hand_controller_output },
 
       /* Beeper */
-      { F8_DEVICE_BEEPER, 7, 5, 0, NULL, beeper_out },
+      { F8_DEVICE_BEEPER, 7, 5, { -1 }, NULL, beeper_out },
 
       /* Cartridge ROM */
-      { F8_DEVICE_3851, 8, 0, 0x800, NULL, NULL },
-      { F8_DEVICE_3851, 9, 0, 0xC00, NULL, NULL },
-      { F8_DEVICE_3851, 10, 0, 0x1000, NULL, NULL },
-      { F8_DEVICE_3851, 11, 0, 0x1400, NULL, NULL },
-      { F8_DEVICE_3851, 12, 0, 0x1800, NULL, NULL },
-      { F8_DEVICE_3851, 13, 0, 0x1C00, NULL, NULL },
-      { F8_DEVICE_3851, 14, 0, 0x2000, NULL, NULL },
-      { F8_DEVICE_3851, 15, 0, 0x2400, NULL, NULL },
+      { F8_DEVICE_3851, 8, 0, { 0x0800, -1 }, NULL, NULL },
+      { F8_DEVICE_3851, 9, 0, { 0x0C00, -1 }, NULL, NULL },
+      { F8_DEVICE_3851, 10, 0, { 0x1000, -1 }, NULL, NULL },
+      { F8_DEVICE_3851, 11, 0, { 0x1400, -1 }, NULL, NULL },
+      { F8_DEVICE_3851, 12, 0, { 0x1800, -1 }, NULL, NULL },
+      { F8_DEVICE_3851, 13, 0, { 0x1C00, -1 }, NULL, NULL },
+      { F8_DEVICE_3851, 14, 0, { 0x2000, -1 }, NULL, NULL },
+      { F8_DEVICE_3851, 15, 0, { 0x2400, -1 }, NULL, NULL },
 
-      { F8_DEVICE_2114, 16, 0, 0x2800, NULL, NULL },
-      { F8_DEVICE_2114, 17, 0, 0x2A00, NULL, NULL },
-      { F8_DEVICE_2114, 18, 0, 0x2C00, NULL, NULL },
-      { F8_DEVICE_2114, 19, 0, 0x2E00, NULL, NULL },
-      { F8_DEVICE_SCHACH_LED, 20, 0, 0x3800, NULL, NULL },
+      { F8_DEVICE_2114, 16, 0, { 0x2800, -1 }, NULL, NULL },
+      { F8_DEVICE_2114, 17, 0, { 0x2A00, -1 }, NULL, NULL },
+      { F8_DEVICE_2114, 18, 0, { 0x2C00, -1 }, NULL, NULL },
+      { F8_DEVICE_2114, 19, 0, { 0x2E00, -1 }, NULL, NULL },
 
-      { F8_DEVICE_INVALID, 0, 0, 0, NULL, NULL }
+      { F8_DEVICE_SCHACH_LED, 20, 0, { 0x3800, 0x8000 }, NULL, NULL },
+
+      { F8_DEVICE_INVALID, 0, 0, { -1 }, NULL, NULL }
     }
   },
 
-  { NULL, F8_SYSTEM_UNKNOWN, { { F8_DEVICE_INVALID, 0, 0, 0, NULL, NULL } } }
+  { NULL, F8_SYSTEM_UNKNOWN, { { F8_DEVICE_INVALID, 0, 0, { -1 }, NULL, NULL } } }
 };
 
 f3850_t* f8_main_cpu(f8_system_t *system)
@@ -120,7 +121,7 @@ u8 f8_device_init(f8_device_t *device, const f8_device_id_t type)
 
 u8 f8_system_init_preset(f8_system_t *system, const system_preset_t *preset)
 {
-  unsigned i, j;
+  unsigned i, j, k;
 
   /* Every F8 system has a central 3850 CPU */
   f8_device_init(&system->f8devices[0], F8_DEVICE_3850);
@@ -160,8 +161,6 @@ u8 f8_system_init_preset(f8_system_t *system, const system_preset_t *preset)
       }
       if (hookup->func_out)
       {
-        unsigned k;
-
         for (k = 0; k < F8_MAX_IO_LINK; k++)
         {
           if (!system->io_ports[hookup->port].func_out[k])
@@ -174,25 +173,28 @@ u8 f8_system_init_preset(f8_system_t *system, const system_preset_t *preset)
       }
 
       /* Setup ROMC-enabled devices */
-      if (device->length)
+      for (k = 0; k < F8_MAPPING_MAX; k++)
       {
-        device->start = hookup->start;
-        device->end = hookup->start + device->length - 1;
-      }
-      else
-      {
-        device->start = 0;
-        device->end = 0;
-      }
+        if (device->mappings[k].length && hookup->starts[k] >= 0)
+        {
+          device->mappings[k].start = (u16)hookup->starts[k];
+          device->mappings[k].end = (u16)hookup->starts[k] + device->mappings[k].length - 1;
+        }
+        else
+        {
+          device->mappings[k].start = 0;
+          device->mappings[k].end = 0;
+        }
 
-      /**
-       * If using simple ROMC mode, map to contiguous memory.
-       * @todo Constructor is still called, leading to double allocate.
-       */
 #if !PF_ROMC
-      if (!(device->flags & F8_NO_ROMC))
-        device->data = &system->memory[hookup->start];
+        /**
+         * If using simple ROMC mode, map to contiguous memory.
+         * @todo Constructor is still called, leading to double allocate.
+         */
+        if (!(device->flags & F8_NO_ROMC))
+          device->data = &system->memory[hookup->start];
 #endif
+      }
     }
   }
   system->f8device_count = j;
@@ -230,18 +232,21 @@ unsigned f8_read(f8_system_t *system, void *dest, unsigned address,
                  unsigned size)
 {
 #if PF_ROMC
-  unsigned i;
+  unsigned i, j;
 
   for (i = 0; i < system->f8device_count; i++)
   {
     f8_device_t *device = &system->f8devices[i];
 
-    if (device->flags & F8_NO_ROMC)
-      continue;
-    if (device->length && address >= device->start && address <= device->end)
+    for (j = 0; j < F8_MAPPING_MAX; j++)
     {
-      memcpy(dest, &device->data[address - device->start], size);
-      return size;
+      if (device->mappings[j].length &&
+          address >= device->mappings[j].start &&
+          address <= device->mappings[j].end)
+      {
+        memcpy(dest, &device->mappings[j].data[address - device->mappings[j].start], size);
+        return size;
+      }
     }
   }
 #else
@@ -262,18 +267,21 @@ unsigned f8_write(f8_system_t *system, unsigned address, const void *src,
                   unsigned size)
 {
 #if PF_ROMC
-  unsigned i;
+  unsigned i, j;
 
   for (i = 0; i < system->f8device_count; i++)
   {
     f8_device_t *device = &system->f8devices[i];
 
-    if (device->flags & F8_NO_ROMC)
-      continue;
-    if (device->length && address >= device->start && address <= device->end)
+    for (j = 0; j < F8_MAPPING_MAX; j++)
     {
-      memcpy(&device->data[address - device->start], src, size);
-      return TRUE;
+      if (device->mappings[j].length &&
+          address >= device->mappings[j].start &&
+          address <= device->mappings[j].end)
+      {
+        memcpy(&device->mappings[j].data[address - device->mappings[j].start], src, size);
+        return TRUE;
+      }
     }
   }
 #else

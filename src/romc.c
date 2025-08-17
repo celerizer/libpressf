@@ -6,7 +6,7 @@
 
 #define INIT_DEVICES \
   f8_device_t *device; \
-  u8 i;
+  unsigned i;
 
 #define FOREACH_DEVICE \
   for (i = 0; i < system->f8device_count; i++) \
@@ -22,26 +22,62 @@
  */
 static u8 f8device_contains(f8_device_t* device, u16 address)
 {
-  return device->length && address >= device->start && address <= device->end;
+  unsigned i;
+
+  for (i = 0; i < F8_MAPPING_MAX; i++)
+  {
+    if (device->mappings[i].length &&
+        address >= device->mappings[i].start &&
+        address <= device->mappings[i].end)
+      return TRUE;
+  }
+
+  return FALSE;
 }
 
 static f8_byte *f8device_vptr(f8_device_t *device, u16 address)
 {
-  if (device->length)
+  unsigned i;
+
+  for (i = 0; i < F8_MAPPING_MAX; i++)
   {
-    address -= device->start;
-    return &device->data[address];
+    if (device->mappings[i].length)
+    {
+      address -= device->mappings[i].start;
+      if (device->mappings[i].func_in)
+        device->mappings[i].func_in(device, address);
+      if (device->mappings[i].data)
+        return &device->mappings[i].data[address];
+      return NULL;
+    }
   }
-  else
-    return NULL;
+
+  return NULL;
 }
 
 static void f8device_write(f8_device_t *device, u16 address, f8_byte data)
 {
   if (!(device->flags & F8_DATA_WRITABLE))
     return;
-  address -= device->start;
-  device->data[address] = data;
+  else
+  {
+    unsigned i;
+
+    for (i = 0; i < F8_MAPPING_MAX; i++)
+    {
+      if (device->mappings[i].length &&
+        address >= device->mappings[i].start &&
+        address <= device->mappings[i].end)
+      {
+        address -= device->mappings[i].start;
+        if (device->mappings[i].func_out)
+          device->mappings[i].func_out(device, address, data);
+        if (device->mappings[i].data)
+          device->mappings[i].data[address] = data;
+        return;
+      }
+    }
+  }
 }
 #endif
 

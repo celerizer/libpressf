@@ -74,7 +74,7 @@ F8D_OP_OUT(f2102_out_write)
 
   m_f2102->address = (m_f2102->address & B11110011) | address;
 
-  data = &device->data[address / 8];
+  data = &device->mappings[0].data[address / 8];
   bit = (1 << (address % 8));
 
   /* Are we writing data? */
@@ -132,7 +132,7 @@ void f2102_init(f8_device_t *device)
     f2102_t *m_f2102 = (f2102_t*)pf_dma_alloc(sizeof(f2102_t), TRUE);
 
     device->device = m_f2102;
-    device->data = m_f2102->data;
+    device->mappings[0].data = m_f2102->data;
     device->name = name;
     device->type = type;
     device->flags = F8_NO_ROMC;

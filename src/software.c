@@ -16,8 +16,8 @@ static const software_t pf_software[] =
       0x0a948b61
     },
     {
-      { F8_DEVICE_2102, 0, 0x25, 0, NULL, f2102_out_write },
-      { F8_DEVICE_2102, 0, 0x24, 0, NULL, f2102_out_address }
+      { F8_DEVICE_2102, 0, 0x25, { -1 }, NULL, f2102_out_write },
+      { F8_DEVICE_2102, 0, 0x24, { -1 }, NULL, f2102_out_address }
     }
   },
   {
@@ -27,8 +27,8 @@ static const software_t pf_software[] =
       0x9238d6ce
     },
     {
-      { F8_DEVICE_2102, 0, 0x21, 0, NULL, f2102_out_write },
-      { F8_DEVICE_2102, 0, 0x20, 0, NULL, f2102_out_address },
+      { F8_DEVICE_2102, 0, 0x21, { -1 }, NULL, f2102_out_write },
+      { F8_DEVICE_2102, 0, 0x20, { -1 }, NULL, f2102_out_address },
     }
   },
   {
@@ -38,14 +38,14 @@ static const software_t pf_software[] =
       0x04fb6dce
     },
     {
-      { F8_DEVICE_2114, 0, 0, 0x2800, NULL, NULL },
-      { F8_DEVICE_2114, 1, 0, 0x2A00, NULL, NULL },
-      { F8_DEVICE_2114, 2, 0, 0x2C00, NULL, NULL },
-      { F8_DEVICE_2114, 3, 0, 0x2E00, NULL, NULL },
-      { F8_DEVICE_SCHACH_LED, 4, 0, 0x3800, NULL, NULL }
+      { F8_DEVICE_2114, 0, 0, { 0x2800, -1 }, NULL, NULL },
+      { F8_DEVICE_2114, 1, 0, { 0x2A00, -1 }, NULL, NULL },
+      { F8_DEVICE_2114, 2, 0, { 0x2C00, -1 }, NULL, NULL },
+      { F8_DEVICE_2114, 3, 0, { 0x2E00, -1 }, NULL, NULL },
+      { F8_DEVICE_SCHACH_LED, 4, 0, { 0x3800, 0x8000 }, NULL, NULL }
     }
   },
-  { NULL, 0, { 0 }, { { F8_DEVICE_INVALID, 0, 0, 0, NULL, NULL } } }
+  { NULL, 0, { 0 }, { { F8_DEVICE_INVALID, 0, 0, { -1 }, NULL, NULL } } }
 };
 
 static u32 pf_crc32_for_byte(u32 r)
