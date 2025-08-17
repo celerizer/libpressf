@@ -1416,7 +1416,7 @@ u8 pressf_init(f8_system_t *system)
 void pressf_step(f8_system_t *system)
 {
 #if PF_HAVE_HLE_BIOS
-  void (*hle_func)() = hle_get_func_from_addr(PC0.u);
+  F8_HLE_T hle_func = hle_get_func_from_addr(PC0.u);
 #endif
 
 #if PF_DEBUGGER
@@ -1458,8 +1458,23 @@ u8 pressf_run(f8_system_t *system)
   return TRUE;
 }
 
+void pressf_interrupt(f8_system_t *system)
+{
+  if (system)
+  {
+    romc1cl(system);
+    romc0f(system);
+    romc13(system);
+    romc00s(system);
+  }
+}
+
 void pressf_reset(f8_system_t *system)
 {
   if (system)
+  {
+    romc1cs(system);
     romc08(system);
+    romc00s(system);
+  }
 }
