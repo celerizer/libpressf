@@ -379,7 +379,7 @@ enum
   PF_FONT_LINE_225,
   PF_FONT_LINE_210,
 
-  PF_FONT_SIZE,
+  PF_FONT_SIZE
 };
 
 #endif

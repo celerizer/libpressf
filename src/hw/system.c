@@ -139,7 +139,8 @@ u8 f8_system_init_preset(f8_system_t *system, const system_preset_t *preset)
   f8_device_init(&system->f8devices[0], F8_DEVICE_3850);
   system->main_cpu = system->f8devices[0].device;
 
-  for (i = 0, j = 1; i < SYSTEM_HOOKUP_MAX; i++)
+  j = 1;
+  for (i = 0; i < SYSTEM_HOOKUP_MAX; i++)
   {
     const software_hookup_t *hookup = &preset->hookups[i];
     f8_device_t *device = &system->f8devices[hookup->id];
