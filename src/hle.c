@@ -161,7 +161,7 @@ HLE(drawchar_sys)
 }
 */
 
-void* hle_get_func_from_addr(u16 address)
+F8_HLE_T hle_get_func_from_addr(u16 address)
 {
   switch (address)
   {
