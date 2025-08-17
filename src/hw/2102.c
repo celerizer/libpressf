@@ -2,8 +2,10 @@
 
 #include "2102.h"
 
+#include <string.h>
+
 static const char *name = "Fairchild 2102/2102L (1024 x 1 Static RAM)";
-static int type = F8_DEVICE_2102;
+static f8_device_id_t type = F8_DEVICE_2102;
 
 /*    ==================    */
 /* A6 ||  1        16 || A7 */
@@ -83,39 +85,58 @@ F8D_OP_OUT(f2102_out_write)
     io_data->u = (data->u & bit) ? (value.u & BIT_OUT) : (value.u & ~BIT_OUT);
 }
 
+/** @todo endianness */
+u8 f2102_serialize(const f8_device_t *device, u8 *buffer, unsigned *offset,
+  unsigned size)
+{
+  if (!device || !device->device || !buffer)
+    return FALSE;
+  else if (*offset + sizeof(f2102_t) > size)
+    return FALSE;
+  else
+  {
+    f2102_t *m_f2102 = (f2102_t*)device->device;
+
+    memcpy(buffer + *offset, m_f2102, sizeof(f2102_t));
+    *offset += sizeof(f2102_t);
+
+    return TRUE;
+  }
+}
+
+/** @todo endianness */
+u8 f2102_unserialize(f8_device_t *device, const u8 *buffer, unsigned *offset,
+  unsigned size)
+{
+  if (!device || !device->device || !buffer)
+    return FALSE;
+  else if (*offset + sizeof(f2102_t) > size)
+    return FALSE;
+  else
+  {
+    f2102_t *m_f2102 = (f2102_t*)device->device;
+
+    memcpy(m_f2102, buffer + *offset, sizeof(f2102_t));
+    *offset += sizeof(f2102_t);
+
+    return TRUE;
+  }
+}
+
 void f2102_init(f8_device_t *device)
 {
-   if (!device)
-     return;
-   else
-   {
-     f2102_t *m_f2102 = (f2102_t*)pf_dma_alloc(sizeof(f2102_t), TRUE);
-     device->device = m_f2102;
-     device->data = m_f2102->data;
-     device->name = name;
-     device->type = type;
-     device->flags = F8_NO_ROMC;
-   }
-}
+  if (!device)
+    return;
+  else
+  {
+    f2102_t *m_f2102 = (f2102_t*)pf_dma_alloc(sizeof(f2102_t), TRUE);
 
-void f2012_serialize(void *buffer, unsigned size, unsigned *offset, f8_device_t *device)
-{
-  /*
-  f2102_t *m_f2102 = (f2102_t*)device->device;
-
-  if (buffer)
-    memcpy(buffer + *offset, m_f2102->data, sizeof(f2102_t));
-  *offset += sizeof(f2102_t);
-  */
-}
-
-void f2102_unserialize(void *buffer, unsigned size, unsigned *offset, f8_device_t *device)
-{
-  /*
-  f2102_t *m_f2102 = (f2102_t*)device->device;
-
-  if (buffer)
-    memcpy(m_f2102->data, buffer + *offset, sizeof(f2102_t));
-  *offset += sizeof(f2102_t);
-  */
+    device->device = m_f2102;
+    device->data = m_f2102->data;
+    device->name = name;
+    device->type = type;
+    device->flags = F8_NO_ROMC;
+    device->serialize = f2102_serialize;
+    device->unserialize = f2102_unserialize;
+  }
 }

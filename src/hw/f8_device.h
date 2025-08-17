@@ -121,19 +121,34 @@ typedef struct f8_device_t
   /**
    * A pointer to a function that outputs serialized data for the machine
    * state. For example, for savestates, rewind, and netplay.
+   * @param device The device to serialize.
+   * @param buffer The buffer to write the serialized data to.
+   * @param offset The current offset in the buffer to write to.
+   * @param size The size of the buffer.
+   * @return TRUE if serialization was successful, FALSE otherwise.
    */
-  void (*serialize)(struct f8_device_t *device);
+  u8 (*serialize)(const struct f8_device_t *device, u8 *buffer,
+    unsigned *offset, unsigned size);
 
   /**
    * A pointer to a function that reads in serialized data. For example, for
    * savestates, rewind, and netplay.
+   * @param device The device to unserialize.
+   * @param buffer The buffer to read the serialized data from.
+   * @param offset The current offset in the buffer to read from.
+   * @param size The size of the buffer.
+   * @return TRUE if unserialization was successful, FALSE otherwise.
    */
-  void (*unserialize)(struct f8_device_t *device);
+  u8 (*unserialize)(struct f8_device_t *device, const u8 *buffer,
+    unsigned *offset, unsigned size);
 
   /**
    * A pointer to a function that informs the device of the point of execution
    * in the current frame. Called before inputting or outputting data for this
    * port. For example, outputting sound in the correct spot on a waveform.
+   * @param device The device to set the timing for.
+   * @param current The current point in the frame, in CPU cycles.
+   * @param total The total number of CPU cycles in the frame.
    */
   void (*set_timing)(struct f8_device_t *device, int current, int total);
 
@@ -166,7 +181,11 @@ typedef void F8D_OP_IN_T(f8_device_t*, f8_byte*);
 typedef void F8D_OP_OUT_T(f8_device_t*, f8_byte*, f8_byte);
 
 void f8_generic_init(f8_device_t *device, unsigned size);
-void f8_generic_serialize(const f8_device_t *device, void *buffer, unsigned *size);
-void f8_generic_unserialize(f8_device_t *device, const void *buffer, unsigned *size);
+
+u8 f8_generic_serialize(const f8_device_t *device, u8 *buffer,
+  unsigned *offset, unsigned size);
+
+u8 f8_generic_unserialize(f8_device_t *device, const u8 *buffer,
+  unsigned *offset, unsigned size);
 
 #endif
