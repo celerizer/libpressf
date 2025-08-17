@@ -27,8 +27,13 @@ static u8 f8device_contains(f8_device_t* device, u16 address)
 
 static f8_byte *f8device_vptr(f8_device_t *device, u16 address)
 {
-  address -= device->start;
-  return &device->data[address];
+  if (device->length)
+  {
+    address -= device->start;
+    return &device->data[address];
+  }
+  else
+    return NULL;
 }
 
 static void f8device_write(f8_device_t *device, u16 address, f8_byte data)
@@ -204,7 +209,7 @@ void romc05(f8_system_t *system)
   FOREACH_DEVICE
     if (device->flags & F8_NO_DC0)
       continue;
-    if (f8device_contains(device, device->dc0.u) && (device->flags & F8_DATA_WRITABLE))
+    if (f8device_contains(device, device->dc0.u))
       f8device_write(device, device->dc0.u, system->dbus);
     device->dc0.u += 1;
   }
