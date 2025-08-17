@@ -6,7 +6,7 @@
 
 #include "software.h"
 
-const software_t pf_software[] =
+static const software_t pf_software[] =
 {
   {
     "Videocart-10 (Maze, Jailbreak, Blind-man's-bluff, Trailblazer)",
@@ -48,7 +48,7 @@ const software_t pf_software[] =
   { NULL, 0, { 0 }, { { F8_DEVICE_INVALID, 0, 0, 0, NULL, NULL } } }
 };
 
-u32 crc32_for_byte(u32 r)
+static u32 pf_crc32_for_byte(u32 r)
 {
   int j;
 
@@ -58,14 +58,14 @@ u32 crc32_for_byte(u32 r)
   return r ^ (u32)0xFF000000L;
 }
 
-void crc32(const void *data, u32 n_bytes, u32* crc)
+static void pf_crc32(const void *data, u32 n_bytes, u32* crc)
 {
   static u32 table[0x100];
   u32 i;
 
   if (!*table)
     for (i = 0; i < 0x100; ++i)
-      table[i] = crc32_for_byte(i);
+      table[i] = pf_crc32_for_byte(i);
   for (i = 0; i < n_bytes; ++i)
     *crc = table[(u8)*crc ^ ((const u8*)data)[i]] ^ *crc >> 8;
 }
@@ -75,7 +75,7 @@ const software_t* software_identify(const void *data, u32 size)
   const software_t* software = &pf_software[0];
   u32 crc = 0;
 
-  crc32(data, size, &crc);
+  pf_crc32(data, size, &crc);
   while (software->title)
   {
     int i;
