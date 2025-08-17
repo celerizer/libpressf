@@ -51,12 +51,22 @@ static const system_preset_t f8_systems[] =
       { F8_DEVICE_3851, 14, 0, { 0x2000, -1 }, NULL, NULL },
       { F8_DEVICE_3851, 15, 0, { 0x2400, -1 }, NULL, NULL },
 
+      /* Schach RAM */
       { F8_DEVICE_2114, 16, 0, { 0x2800, -1 }, NULL, NULL },
       { F8_DEVICE_2114, 17, 0, { 0x2A00, -1 }, NULL, NULL },
       { F8_DEVICE_2114, 18, 0, { 0x2C00, -1 }, NULL, NULL },
       { F8_DEVICE_2114, 19, 0, { 0x2E00, -1 }, NULL, NULL },
 
+      /* Schach LED */
       { F8_DEVICE_SCHACH_LED, 20, 0, { 0x3800, 0x8000 }, NULL, NULL },
+
+      /* Extra RAM (Videocart-18) */
+      { F8_DEVICE_2102, 21, 0x21, { -1 }, NULL, f2102_out_write },
+      { F8_DEVICE_2102, 21, 0x20, { -1 }, NULL, f2102_out_address },
+
+      /* Extra RAM (Videocart-10) */
+      { F8_DEVICE_2102, 22, 0x25, { -1 }, NULL, f2102_out_write },
+      { F8_DEVICE_2102, 22, 0x24, { -1 }, NULL, f2102_out_address },
 
       { F8_DEVICE_INVALID, 0, 0, { -1 }, NULL, NULL }
     }
