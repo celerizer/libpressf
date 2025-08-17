@@ -118,19 +118,6 @@ u8 f8_device_init(f8_device_t *device, const f8_device_id_t type)
   return FALSE;
 }
 
-u8 f8_device_set_start(f8_device_t *device, unsigned start)
-{
-  if (start + device->length < 0x10000)
-  {
-    device->start = start;
-    device->end = start + device->length - 1;
-
-    return TRUE;
-  }
-
-  return FALSE;
-}
-
 u8 f8_system_init_preset(f8_system_t *system, const system_preset_t *preset)
 {
   unsigned i, j;
@@ -187,8 +174,16 @@ u8 f8_system_init_preset(f8_system_t *system, const system_preset_t *preset)
       }
 
       /* Setup ROMC-enabled devices */
-      device->start = hookup->start;
-      device->end = hookup->start + device->length - 1;
+      if (device->length)
+      {
+        device->start = hookup->start;
+        device->end = hookup->start + device->length - 1;
+      }
+      else
+      {
+        device->start = 0;
+        device->end = 0;
+      }
 
       /**
        * If using simple ROMC mode, map to contiguous memory.

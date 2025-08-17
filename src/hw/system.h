@@ -157,8 +157,6 @@ u8 f8_device_remove(f8_system_t *system, f8_device_t *device);
 
 u8 f8_device_remove_index(f8_system_t *system, unsigned index);
 
-u8 f8_device_set_start(f8_device_t *device, unsigned start);
-
 u8 f8_settings_apply(f8_system_t *system, f8_settings_t settings);
 
 u8 f8_settings_apply_default(f8_system_t *system);
